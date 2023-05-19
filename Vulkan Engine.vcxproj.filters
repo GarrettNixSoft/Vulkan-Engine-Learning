@@ -36,6 +36,12 @@
     <ClCompile Include="fve_device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fve_swap_chain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fve_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.h">
@@ -45,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fve_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fve_swap_chain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fve_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

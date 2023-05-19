@@ -1,4 +1,6 @@
 #include "fve_window.h"
+
+#include <iostream>
 #include <stdexcept>
 
 namespace fve{
@@ -23,7 +25,17 @@ namespace fve{
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		// create the window
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+		//glfwSetWindowUserPointer(window, this);
+		//glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
+
+	/*void fvewindow::framebufferresizecallback(glfwwindow* window, int width, int height) {
+		auto fvewindow = reinterpret_cast<fvewindow*>(glfwgetwindowuserpointer(window));
+		fvewindow->framebufferresized = true;
+		fvewindow->width = width;
+		fvewindow->height = height;
+		std::cout << "window resized to (" << width << " x " << height << ")" << std::endl;
+	}*/
 
 	void FveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
 		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
