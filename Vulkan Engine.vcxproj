@@ -164,18 +164,23 @@
     <ClCompile Include="first_app.cpp" />
     <ClCompile Include="fve_model.cpp" />
     <ClCompile Include="fve_pipeline.cpp" />
+    <ClCompile Include="fve_renderer.cpp" />
     <ClCompile Include="fve_window.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="fve_window.h" />
     <ClCompile Include="fve_device.cpp" />
     <ClCompile Include="fve_swap_chain.cpp" />
+    <ClCompile Include="simple_render_system.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.h" />
+    <ClInclude Include="fve_game_object.h" />
     <ClInclude Include="fve_model.h" />
     <ClInclude Include="fve_pipeline.h" />
     <ClInclude Include="fve_device.h" />
+    <ClInclude Include="fve_renderer.hpp" />
     <ClInclude Include="fve_swap_chain.h" />
+    <ClInclude Include="simple_render_system.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\simple_shader.frag" />
