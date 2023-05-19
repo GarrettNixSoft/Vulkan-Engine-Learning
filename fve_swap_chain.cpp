@@ -13,6 +13,17 @@ namespace fve {
 
 	FveSwapChain::FveSwapChain(FveDevice& deviceRef, VkExtent2D extent)
 		: device{ deviceRef }, windowExtent{ extent } {
+		init();
+	}
+
+	FveSwapChain::FveSwapChain(FveDevice& deviceRef, VkExtent2D extent, std::shared_ptr<FveSwapChain> previous)
+		: device{ deviceRef }, windowExtent{ extent }, oldSwapChain{ previous } {
+		init();
+		// clean up old swap chain
+		oldSwapChain = nullptr;
+	}
+
+	void FveSwapChain::init() {
 		createSwapChain();
 		createImageViews();
 		createRenderPass();
@@ -163,7 +174,7 @@ namespace fve {
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
 
-		createInfo.oldSwapchain = nullptr;
+		createInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
 		if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create swap chain!");

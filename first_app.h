@@ -23,7 +23,7 @@ namespace fve {
 	private:
 		FveWindow window{ WIDTH, HEIGHT, "First Vulkan Game" };
 		FveDevice device{ window };
-		FveSwapChain swapChain{device, window.getExtent()};
+		std::unique_ptr<FveSwapChain> swapChain;
 		std::unique_ptr<FvePipeline> pipeline;
 		VkPipelineLayout pipelineLayout;
 		std::vector<VkCommandBuffer> commandBuffers;
@@ -37,7 +37,10 @@ namespace fve {
 		void createPipelineLayout();
 		void createPipeline();
 		void createCommandBuffers();
+		void freeCommandBuffers();
 		void drawFrame();
+		void recreateSwapChain();
+		void recordCommandBuffer(int imageIndex);
 	};
 
 }

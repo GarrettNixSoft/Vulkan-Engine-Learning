@@ -22,20 +22,19 @@ namespace fve{
 		// tell GLFW not to create an OpenGL context
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		// disable resizing for now
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		// create the window
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
-		//glfwSetWindowUserPointer(window, this);
-		//glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+		glfwSetWindowUserPointer(window, this);
+		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
 
-	/*void fvewindow::framebufferresizecallback(glfwwindow* window, int width, int height) {
-		auto fvewindow = reinterpret_cast<fvewindow*>(glfwgetwindowuserpointer(window));
-		fvewindow->framebufferresized = true;
-		fvewindow->width = width;
-		fvewindow->height = height;
-		std::cout << "window resized to (" << width << " x " << height << ")" << std::endl;
-	}*/
+	void FveWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+		auto fveWindow = reinterpret_cast<FveWindow*>(glfwGetWindowUserPointer(window));
+		fveWindow->framebufferResized = true;
+		fveWindow->width = width;
+		fveWindow->height = height;
+	}
 
 	void FveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
 		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {

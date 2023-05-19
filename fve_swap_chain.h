@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace fve {
 
@@ -16,6 +17,7 @@ class FveSwapChain {
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   FveSwapChain(FveDevice &deviceRef, VkExtent2D windowExtent);
+  FveSwapChain(FveDevice& deviceRef, VkExtent2D windowExtent, std::shared_ptr<FveSwapChain> previous);
   ~FveSwapChain();
 
   FveSwapChain(const FveSwapChain &) = delete;
@@ -39,6 +41,7 @@ class FveSwapChain {
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
  private:
+    void init();
     void createSwapChain();
     void createImageViews();
     void createDepthResources();
@@ -69,6 +72,7 @@ class FveSwapChain {
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
+  std::shared_ptr<FveSwapChain> oldSwapChain;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
