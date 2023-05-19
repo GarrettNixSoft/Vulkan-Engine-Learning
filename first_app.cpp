@@ -24,6 +24,8 @@ namespace fve {
 
 		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass() };
 		FveCamera camera{};
+		//camera.setViewDirection(glm::vec3(0), glm::vec3(0.5f, 0.0f, 1.0f));
+		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
 
 		// game loop
 		while (!window.shouldClose()) {
