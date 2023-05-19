@@ -3,8 +3,9 @@
 #pragma once
 
 #include "fve_device.h"
-#include "fve_game_object.h"
+#include "fve_game_object.hpp"
 #include "fve_pipeline.h"
+#include "fve_camera.hpp"
 
 #include <memory>
 #include <vector>
@@ -17,7 +18,7 @@ namespace fve {
 		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass);
 		~SimpleRenderSystem();
 
-		void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<FveGameObject>& gameObjects);
+		void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<FveGameObject>& gameObjects, const FveCamera& camera);
 
 	private:
 		FveDevice& device;

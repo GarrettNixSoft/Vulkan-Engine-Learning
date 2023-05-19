@@ -48,6 +48,9 @@
     <ClCompile Include="simple_render_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fve_camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.h">
@@ -62,16 +65,19 @@
     <ClInclude Include="fve_swap_chain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fve_model.h">
+    <ClInclude Include="fve_model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fve_game_object.h">
+    <ClInclude Include="fve_game_object.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fve_renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="simple_render_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fve_camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

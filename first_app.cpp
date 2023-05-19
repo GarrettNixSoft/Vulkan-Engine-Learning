@@ -1,5 +1,6 @@
 #include "first_app.h"
 #include "simple_render_system.hpp"
+#include "fve_camera.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -22,6 +23,7 @@ namespace fve {
 	void Game::run() {
 
 		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass() };
+		FveCamera camera{};
 
 		// game loop
 		while (!window.shouldClose()) {
@@ -29,12 +31,16 @@ namespace fve {
 			
 			if (auto commandBuffer = renderer.beginFrame()) {
 
+				float aspect = renderer.getAspectRatio();
+				//camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+				camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+
 				// begin offscreen shadow pass
 				// render shadow casting objects
 				// end offscreen shadow pass
 
 				renderer.beginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+				simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 
@@ -47,32 +53,75 @@ namespace fve {
 
 	}
 
-	void Game::loadGameObjects() {
+	// temporary helper function, creates a 1x1x1 cube centered at offset
+	std::unique_ptr<FveModel> createCubeModel(FveDevice& device, glm::vec3 offset) {
 		std::vector<FveModel::Vertex> vertices{
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+
+			// left face (white)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+			// right face (yellow)
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+			// top face (orange, remember y axis points down)
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+			// bottom face (red)
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+			// nose face (blue)
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+			// tail face (green)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+
 		};
-
-		std::vector<glm::vec3> colors{
-			{1.f, .7f, .73f},
-			{1.f, .87f, .73f},
-			{1.f, 1.f, .73f},
-			{.73f, 1.f, .8f},
-			{.73, .88f, 1.f}
-		};
-
-		auto model = std::make_shared<FveModel>(device, vertices);
-
-		for (int i = 0; i < 40; i++) {
-			auto triangle = FveGameObject::createGameObject();
-			triangle.model = model;
-			triangle.color = colors[i % colors.size()];
-			triangle.transform2d.scale = glm::vec2(0.5) + i * 0.025f;
-			triangle.transform2d.rotation = i * glm::two_pi<float>() + 0.025f;
-
-			gameObjects.push_back(std::move(triangle));
+		for (auto& v : vertices) {
+			v.position += offset;
 		}
+		return std::make_unique<FveModel>(device, vertices);
+	}
+
+	void Game::loadGameObjects() {
+		std::shared_ptr<FveModel> model = createCubeModel(device, { 0.0f, 0.0f, 0.0f });
+
+		auto cube = FveGameObject::createGameObject();
+		cube.model = model;
+		cube.transform.translation = {0.0f, 0.0f, 2.5f};
+		cube.transform.scale = {0.5f, 0.5f, 0.5f};
+
+		gameObjects.push_back(std::move(cube));
+
 	}
 
 }

@@ -1,5 +1,5 @@
 #include "fve_pipeline.h"
-#include "fve_model.h"
+#include "fve_model.hpp"
 
 #include <fstream>
 #include <stdexcept>

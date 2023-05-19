@@ -39,6 +39,7 @@ namespace fve {
 		void endFrame();
 
 		void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
+		float getAspectRatio() const { return swapChain->extentAspectRatio(); }
 		void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
 	private:

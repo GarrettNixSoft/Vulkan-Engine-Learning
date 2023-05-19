@@ -3,7 +3,7 @@
 #include "fve_window.h"
 #include "fve_device.h"
 #include "fve_renderer.hpp"
-#include "fve_game_object.h"
+#include "fve_game_object.hpp"
 
 #include <memory>
 #include <vector>
