@@ -1,4 +1,6 @@
 #include "first_app.h"
+
+#include "keyboard_movement_controller.hpp"
 #include "simple_render_system.hpp"
 #include "fve_camera.hpp"
 
@@ -7,10 +9,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include <iostream>
 #include <stdexcept>
-#include <array>
+#include <iostream>
 #include <cassert>
+#include <chrono>
+#include <array>
 
 namespace fve {
 
@@ -24,17 +27,27 @@ namespace fve {
 
 		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass() };
 		FveCamera camera{};
-		//camera.setViewDirection(glm::vec3(0), glm::vec3(0.5f, 0.0f, 1.0f));
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
+
+		auto viewerObject = FveGameObject::createGameObject();
+		KeyboardMovementController cameraController{};
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		// game loop
 		while (!window.shouldClose()) {
 			glfwPollEvents();
+
+			auto newTime = std::chrono::high_resolution_clock::now();
+			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			currentTime = newTime;
+
+			cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
+			camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 			
 			if (auto commandBuffer = renderer.beginFrame()) {
 
 				float aspect = renderer.getAspectRatio();
-				//camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
 				camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
 
 				// begin offscreen shadow pass

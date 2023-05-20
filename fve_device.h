@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fve_window.h"
+#include "fve_window.hpp"
 
 // std lib headers
 #include <string>

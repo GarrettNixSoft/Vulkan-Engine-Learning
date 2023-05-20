@@ -1,4 +1,4 @@
-#include "fve_window.h"
+#include "fve_window.hpp"
 
 #include <iostream>
 #include <stdexcept>

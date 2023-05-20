@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "fve_window.h"
+#include "fve_window.hpp"
 #include "fve_device.h"
 #include "fve_swap_chain.h"
 
