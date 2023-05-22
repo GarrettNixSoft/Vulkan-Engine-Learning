@@ -71,16 +71,23 @@ namespace fve {
 	}
 
 	void Game::loadGameObjects() {
-		std::shared_ptr<FveModel> model = FveModel::createModelFromFile(device, "models/smooth_vase.obj");
+		std::shared_ptr<FveModel> model = FveModel::createModelFromFile(device, "models/flat_vase.obj");
 
-		auto gameObject = FveGameObject::createGameObject();
-		gameObject.model = model;
-		gameObject.transform.translation = { 0.0f, 0.0f, 2.5f };
-		//gameObject.transform.scale = { 0.5f, 0.5f, 0.5f };
-		gameObject.transform.scale = glm::vec3(3.0f);
+		auto flatVase = FveGameObject::createGameObject();
+		flatVase.model = model;
+		flatVase.transform.translation = { -0.5f, 0.5f, 2.5f };
+		flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 
-		gameObjects.push_back(std::move(gameObject));
+		gameObjects.push_back(std::move(flatVase));
 
+		model = FveModel::createModelFromFile(device, "models/smooth_vase.obj");
+
+		auto smoothVase = FveGameObject::createGameObject();
+		smoothVase.model = model;
+		smoothVase.transform.translation = { 0.5f, 0.5f, 2.5f };
+		smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
+
+		gameObjects.push_back(std::move(smoothVase));
 	}
 
 }
