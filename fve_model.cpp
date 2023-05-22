@@ -1,11 +1,28 @@
 #include "fve_model.hpp"
+#include "fve_utils.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
+#include <unordered_map>
 #include <iostream>
 #include <cassert>
 #include <limits>
+
+namespace std {
+
+	template<>
+	struct hash<fve::FveModel::Vertex> {
+		size_t operator()(fve::FveModel::Vertex const& vertex) const {
+			size_t seed = 0;
+			fve::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+			return seed;
+		}
+	};
+
+}
 
 namespace fve {
 
@@ -174,11 +191,13 @@ namespace fve {
 		vertices.clear();
 		indices.clear();
 
+		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
 		for (const auto& shape : shapes) {
 			for (const auto& index : shape.mesh.indices) {
 				Vertex vertex{};
 
-				// index valuesa are optional
+				// index values are optional
 				if (index.vertex_index >= 0) {
 					vertex.position = {
 						attrib.vertices[3 * index.vertex_index + 0],
@@ -217,7 +236,11 @@ namespace fve {
 				}
 
 				// store the vertex
-				vertices.push_back(vertex);
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
 	}

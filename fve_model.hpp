@@ -22,6 +22,10 @@ namespace fve {
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> geAttributeDescriptions();
+
+			bool operator==(const Vertex& other) const {
+				return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
+			}
 		};
 
 		struct Builder {

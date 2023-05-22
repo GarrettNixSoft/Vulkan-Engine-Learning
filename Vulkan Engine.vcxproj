@@ -184,6 +184,7 @@
     <ClInclude Include="fve_device.h" />
     <ClInclude Include="fve_renderer.hpp" />
     <ClInclude Include="fve_swap_chain.h" />
+    <ClInclude Include="fve_utils.hpp" />
     <ClInclude Include="simple_render_system.hpp" />
   </ItemGroup>
   <ItemGroup>

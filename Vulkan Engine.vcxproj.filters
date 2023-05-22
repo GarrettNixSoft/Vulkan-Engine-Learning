@@ -86,6 +86,9 @@
     <ClInclude Include="fve_camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fve_utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\simple_shader.vert">
