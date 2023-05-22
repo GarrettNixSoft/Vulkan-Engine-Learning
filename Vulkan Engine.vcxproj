@@ -162,6 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="first_app.cpp" />
+    <ClCompile Include="fve_buffer.cpp" />
     <ClCompile Include="fve_camera.cpp" />
     <ClCompile Include="fve_game_object.cpp" />
     <ClCompile Include="fve_model.cpp" />
@@ -178,11 +179,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.h" />
+    <ClInclude Include="fve_buffer.hpp" />
     <ClInclude Include="fve_camera.hpp" />
     <ClInclude Include="fve_game_object.hpp" />
     <ClInclude Include="fve_model.hpp" />
     <ClInclude Include="fve_pipeline.h" />
-    <ClInclude Include="fve_device.h" />
+    <ClInclude Include="fve_device.hpp" />
     <ClInclude Include="fve_renderer.hpp" />
     <ClInclude Include="fve_swap_chain.h" />
     <ClInclude Include="fve_utils.hpp" />

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "fve_device.h"
+#include "fve_device.hpp"
+#include "fve_buffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -49,14 +50,12 @@ namespace fve {
 	private:
 		FveDevice& device;
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
+		std::unique_ptr<FveBuffer> vertexBuffer;
 		uint32_t vertexCount;
 
 		bool hasIndexBuffer = false;
 		bool complexModel = false;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
+		std::unique_ptr<FveBuffer> indexBuffer;
 		uint32_t indexCount;
 
 		void createVertexBuffers(const std::vector<Vertex>& vertices);

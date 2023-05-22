@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fve_device.h"
+#include "fve_device.hpp"
 
 #include <string>
 #include <vector>

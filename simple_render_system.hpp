@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "fve_device.h"
+#include "fve_device.hpp"
 #include "fve_game_object.hpp"
 #include "fve_pipeline.h"
 #include "fve_camera.hpp"
