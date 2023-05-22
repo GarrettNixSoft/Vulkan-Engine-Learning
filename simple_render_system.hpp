@@ -6,6 +6,7 @@
 #include "fve_game_object.hpp"
 #include "fve_pipeline.h"
 #include "fve_camera.hpp"
+#include "fve_frame_info.hpp"
 
 #include <memory>
 #include <vector>
@@ -18,7 +19,7 @@ namespace fve {
 		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass);
 		~SimpleRenderSystem();
 
-		void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<FveGameObject>& gameObjects, const FveCamera& camera);
+		void renderGameObjects(FrameInfo& frameInfo, std::vector<FveGameObject>& gameObjects);
 
 	private:
 		FveDevice& device;
