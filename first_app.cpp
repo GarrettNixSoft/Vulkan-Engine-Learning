@@ -59,7 +59,7 @@ namespace fve {
 				.build(globalDescriprorSets[i]);
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass() };
+		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
 		FveCamera camera{};
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
 
@@ -89,7 +89,8 @@ namespace fve {
 					frameIndex,
 					frameTime,
 					commandBuffer,
-					camera
+					camera,
+					globalDescriprorSets[frameIndex]
 				};
 
 				// ================ INPUT ================

@@ -11,6 +11,7 @@ namespace fve {
 		float frameTime;
 		VkCommandBuffer commandBuffer;
 		FveCamera& camera;
+		VkDescriptorSet globalDescriptorSet;
 	};;
 
 }

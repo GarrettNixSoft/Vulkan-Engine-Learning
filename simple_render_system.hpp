@@ -16,7 +16,7 @@ namespace fve {
 	class SimpleRenderSystem {
 	public:
 
-		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass);
+		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 		~SimpleRenderSystem();
 
 		void renderGameObjects(FrameInfo& frameInfo, std::vector<FveGameObject>& gameObjects);
@@ -31,7 +31,7 @@ namespace fve {
 		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
 		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-		void createPipelineLayout();
+		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 	};
 
