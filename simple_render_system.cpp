@@ -13,7 +13,7 @@
 namespace fve {
 
 	struct SimplePushConstantData {
-		alignas(0) glm::mat4 modelMatrix{ 1.0f };
+		alignas(16) glm::mat4 modelMatrix{ 1.0f };
 		alignas(16) glm::mat4 normalMatrix{ 1.0f };
 	};
 

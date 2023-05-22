@@ -19,8 +19,12 @@
 namespace fve {
 
 	struct GlobalUbo {
-		glm::mat4 projectionView{ 1.0f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0, -3.0f, -1.0f });
+		alignas(16) glm::mat4 projectionView{ 1.0f };
+		//alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0, -3.0f, -1.0f });
+		alignas(16) glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f}; // w is light intensity
+		alignas(16) glm::vec3 lightPosition{ -1.0f };
+		alignas(16) glm::vec4 lightColor{ 1.0f }; // w is light intensity
+
 	};
 
 	Game::Game() {
@@ -64,6 +68,7 @@ namespace fve {
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
 
 		auto viewerObject = FveGameObject::createGameObject();
+		viewerObject.transform.translation.z = -2.5f;
 		MovementController cameraController{};
 		cameraController.init(window.getGLFWwindow(), WIDTH, HEIGHT);
 
@@ -96,7 +101,7 @@ namespace fve {
 				// ================ INPUT ================
 				// camera controls
 				float aspect = renderer.getAspectRatio();
-				camera.setPerspectiveProjection(glm::radians(cameraController.fov), aspect, 0.1f, 10.0f);
+				camera.setPerspectiveProjection(glm::radians(cameraController.fov), aspect, 0.1f, 1000.0f);
 
 				// ================ UPDATE ================
 
@@ -130,7 +135,7 @@ namespace fve {
 
 		auto flatVase = FveGameObject::createGameObject();
 		flatVase.model = model;
-		flatVase.transform.translation = { -0.5f, 0.5f, 2.5f };
+		flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
 		flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 
 		gameObjects.push_back(std::move(flatVase));
@@ -139,10 +144,17 @@ namespace fve {
 
 		auto smoothVase = FveGameObject::createGameObject();
 		smoothVase.model = model;
-		smoothVase.transform.translation = { 0.5f, 0.5f, 2.5f };
+		smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
 		smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 
 		gameObjects.push_back(std::move(smoothVase));
+
+		model = FveModel::createModelFromFile(device, "models/quad.obj");
+		auto floor = FveGameObject::createGameObject();
+		floor.model = model;
+		floor.transform.translation = {0.0f, 0.5f, 0.0f};
+		floor.transform.scale = { 3.0f, 1.0f, 3.0f };
+		gameObjects.push_back(std::move(floor));
 	}
 
 }
