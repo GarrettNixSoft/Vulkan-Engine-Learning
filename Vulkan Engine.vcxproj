@@ -167,8 +167,8 @@
     <ClCompile Include="fve_pipeline.cpp" />
     <ClCompile Include="fve_renderer.cpp" />
     <ClCompile Include="fve_window.cpp" />
-    <ClCompile Include="keyboard_movement_controller.cpp" />
-    <ClCompile Include="keyboard_movement_controller.hpp" />
+    <ClCompile Include="movement_controller.cpp" />
+    <ClCompile Include="movement_controller.hpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="fve_window.hpp" />
     <ClCompile Include="fve_device.cpp" />

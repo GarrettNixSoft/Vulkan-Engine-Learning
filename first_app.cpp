@@ -1,6 +1,6 @@
 #include "first_app.h"
 
-#include "keyboard_movement_controller.hpp"
+#include "movement_controller.hpp"
 #include "simple_render_system.hpp"
 #include "fve_camera.hpp"
 
@@ -30,13 +30,15 @@ namespace fve {
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
 
 		auto viewerObject = FveGameObject::createGameObject();
-		KeyboardMovementController cameraController{};
+		MovementController cameraController{};
+		cameraController.init(window.getGLFWwindow(), WIDTH, HEIGHT);
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		// game loop
 		while (!window.shouldClose()) {
 			glfwPollEvents();
+			cameraController.update(window.getGLFWwindow());
 
 			auto newTime = std::chrono::high_resolution_clock::now();
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
@@ -48,7 +50,7 @@ namespace fve {
 			if (auto commandBuffer = renderer.beginFrame()) {
 
 				float aspect = renderer.getAspectRatio();
-				camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+				camera.setPerspectiveProjection(glm::radians(cameraController.fov), aspect, 0.1f, 10.0f);
 
 				// begin offscreen shadow pass
 				// render shadow casting objects

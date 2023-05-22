@@ -51,10 +51,10 @@
     <ClCompile Include="fve_camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.hpp">
+    <ClCompile Include="movement_controller.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.cpp">
+    <ClCompile Include="movement_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

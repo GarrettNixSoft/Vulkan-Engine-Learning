@@ -15,7 +15,7 @@ namespace fve {
 		FveWindow(const FveWindow&) = delete;
 		FveWindow& operator=(const FveWindow&) = delete;
 
-		bool shouldClose() { return glfwWindowShouldClose(window); }
+		bool shouldClose() { return glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS; }
 
 		VkExtent2D getExtent() { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
 		bool wasWindowResized() { return framebufferResized; }
