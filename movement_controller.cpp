@@ -80,8 +80,11 @@ namespace fve {
 		if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS) moveDir += upDir;
 		if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
 
+		float speedModifier = 1.0f;
+		if (glfwGetKey(window, keys.sprint)) speedModifier = 5.0f;
+
 		if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
-			gameObject.transform.translation += moveSpeed * dt * glm::normalize(moveDir);
+			gameObject.transform.translation += moveSpeed * speedModifier * dt * glm::normalize(moveDir);
 		}
 
 		// FOV changes?

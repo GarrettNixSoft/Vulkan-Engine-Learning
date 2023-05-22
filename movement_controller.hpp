@@ -13,6 +13,7 @@ namespace fve {
 			int moveBackward = GLFW_KEY_S;
 			int moveUp = GLFW_KEY_SPACE;
 			int moveDown = GLFW_KEY_LEFT_CONTROL;
+			int sprint = GLFW_KEY_LEFT_SHIFT;
 		};
 
 		struct MouseMappings {
