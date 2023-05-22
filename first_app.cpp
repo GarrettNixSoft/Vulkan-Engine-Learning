@@ -24,6 +24,10 @@ namespace fve {
 	};
 
 	Game::Game() {
+		globalPool = FveDescriptorPool::Builder(device)
+			.setMaxSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
 		loadGameObjects();
 	}
 
@@ -31,15 +35,29 @@ namespace fve {
 
 	void Game::run() {
 
-		FveBuffer globalUboBuffer{
-			device,
-			sizeof(GlobalUbo),
-			FveSwapChain::MAX_FRAMES_IN_FLIGHT,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-			device.properties.limits.minUniformBufferOffsetAlignment
-		};
-		globalUboBuffer.map();
+		std::vector<std::unique_ptr<FveBuffer>> uboBuffers(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < uboBuffers.size(); i++) {
+			uboBuffers[i] = std::make_unique<FveBuffer>(
+				device,
+				sizeof(GlobalUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				device.properties.limits.minUniformBufferOffsetAlignment);
+			uboBuffers[i]->map();
+		}
+
+		auto globalSetLayout = FveDescriptorSetLayout::Builder(device)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.build();
+
+		std::vector<VkDescriptorSet> globalDescriprorSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriprorSets.size(); i++) {
+			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			FveDescriptorWriter(*globalSetLayout, *globalPool)
+				.writeBuffer(0, &bufferInfo)
+				.build(globalDescriprorSets[i]);
+		}
 
 		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass() };
 		FveCamera camera{};
@@ -83,8 +101,8 @@ namespace fve {
 
 				GlobalUbo ubo{};
 				ubo.projectionView = camera.getProjection() * camera.getView();
-				globalUboBuffer.writeToIndex(&ubo, frameIndex);
-				globalUboBuffer.flushIndex(frameIndex);
+				uboBuffers[frameIndex]->writeToBuffer(&ubo);
+				uboBuffers[frameIndex]->flush();
 
 				// ================ RENDER ================
 				

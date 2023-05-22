@@ -66,6 +66,9 @@
     <ClCompile Include="fve_frame_info.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="fve_descriptors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.h">
@@ -99,6 +102,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fve_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fve_descriptors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

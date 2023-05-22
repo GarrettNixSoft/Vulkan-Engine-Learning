@@ -164,6 +164,7 @@
     <ClCompile Include="first_app.cpp" />
     <ClCompile Include="fve_buffer.cpp" />
     <ClCompile Include="fve_camera.cpp" />
+    <ClCompile Include="fve_descriptors.cpp" />
     <ClCompile Include="fve_frame_info.hpp" />
     <ClCompile Include="fve_game_object.cpp" />
     <ClCompile Include="fve_model.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="first_app.h" />
     <ClInclude Include="fve_buffer.hpp" />
     <ClInclude Include="fve_camera.hpp" />
+    <ClInclude Include="fve_descriptors.hpp" />
     <ClInclude Include="fve_game_object.hpp" />
     <ClInclude Include="fve_model.hpp" />
     <ClInclude Include="fve_pipeline.h" />

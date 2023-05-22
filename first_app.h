@@ -4,6 +4,7 @@
 #include "fve_device.hpp"
 #include "fve_renderer.hpp"
 #include "fve_game_object.hpp"
+#include "fve_descriptors.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,6 +25,8 @@ namespace fve {
 		FveDevice device{ window };
 		FveRenderer renderer{window, device};
 
+		// note: order of declarations matters
+		std::unique_ptr<FveDescriptorPool> globalPool{};
 		std::vector<FveGameObject> gameObjects;
 
 		Game(const Game&) = delete;
