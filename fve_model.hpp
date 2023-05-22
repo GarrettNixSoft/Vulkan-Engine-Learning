@@ -6,6 +6,9 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include <vector>
+#include <memory>
+
 namespace fve {
 
 	class FveModel {
@@ -24,10 +27,14 @@ namespace fve {
 		struct Builder {
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
+
+			void loadModel(const std::string& filepath);
 		};
 
 		FveModel(FveDevice& device, const FveModel::Builder& builder);
 		~FveModel();
+
+		static std::unique_ptr<FveModel> createModelFromFile(FveDevice& device, const std::string& filepath);
 
 		FveModel(const FveModel&) = delete;
 		FveModel& operator=(const FveModel&) = delete;

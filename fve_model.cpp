@@ -3,6 +3,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include <iostream>
 #include <cassert>
 #include <limits>
 
@@ -20,6 +21,13 @@ namespace fve {
 			vkDestroyBuffer(device.device(), indexBuffer, nullptr);
 			vkFreeMemory(device.device(), indexBufferMemory, nullptr);
 		}
+	}
+
+	std::unique_ptr<FveModel> FveModel::createModelFromFile(FveDevice& device, const std::string& filepath) {
+		Builder builder;
+		builder.loadModel(filepath);
+		std::cout << "Loaded model: " << filepath << " -- " << "Vertex count: " << builder.vertices.size() << std::endl;
+		return std::make_unique<FveModel>(device, builder);
 	}
 
 	void FveModel::createVertexBuffers(const std::vector<Vertex>& vertices) {
@@ -150,6 +158,68 @@ namespace fve {
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
 
 		return attributeDescriptions;
+	}
+
+	void FveModel::Builder::loadModel(const std::string& filepath) {
+		// prepare what tinyobjloader needs to load an OBJ file
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+		// load the OBJ file with tinyobjloader
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
+			throw std::runtime_error(warn + err);
+		}
+
+		vertices.clear();
+		indices.clear();
+
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				Vertex vertex{};
+
+				// index valuesa are optional
+				if (index.vertex_index >= 0) {
+					vertex.position = {
+						attrib.vertices[3 * index.vertex_index + 0],
+						attrib.vertices[3 * index.vertex_index + 1],
+						attrib.vertices[3 * index.vertex_index + 2]
+					};
+					// might contain color data
+					auto colorIndex = 3 * index.vertex_index + 2;
+					if (colorIndex < attrib.colors.size()) {
+						vertex.color = {
+							attrib.colors[colorIndex - 2],
+							attrib.colors[colorIndex - 1],
+							attrib.colors[colorIndex - 0],
+						};
+					}
+					else {
+						vertex.color = { 1.0f, 1.0f, 1.0f }; // default to white
+					}
+				}
+
+				// normals are optional
+				if (index.normal_index >= 0) {
+					vertex.normal = {
+						attrib.normals[3 * index.normal_index + 0],
+						attrib.normals[3 * index.normal_index + 1],
+						attrib.normals[3 * index.normal_index + 2]
+					};
+				}
+
+				// tex coords are optional
+				if (index.texcoord_index >= 0) {
+					vertex.uv = {
+						attrib.texcoords[2 * index.texcoord_index + 0],
+						attrib.texcoords[2 * index.texcoord_index + 1]
+					};
+				}
+
+				// store the vertex
+				vertices.push_back(vertex);
+			}
+		}
 	}
 
 }
