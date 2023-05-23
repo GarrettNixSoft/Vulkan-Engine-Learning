@@ -115,8 +115,11 @@ namespace fve {
 				// end offscreen shadow pass
 
 				renderer.beginSwapChainRenderPass(commandBuffer);
+
+				// order matters with transparent objects involved
 				simpleRenderSystem.renderGameObjects(frameInfo);
 				pointLightSystem.render(frameInfo);
+
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 

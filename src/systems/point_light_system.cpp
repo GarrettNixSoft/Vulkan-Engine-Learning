@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <array>
 #include <cassert>
+#include <map>
 
 namespace fve {
 
@@ -52,6 +53,7 @@ namespace fve {
 
 		PipelineConfigInfo pipelineConfig{};
 		FvePipeline::defaultPipelineConfigInfo(pipelineConfig);
+		FvePipeline::enableAlphaBlending(pipelineConfig);
 		pipelineConfig.bindingDescriptions.clear();
 		pipelineConfig.attributeDescriptions.clear();
 		pipelineConfig.renderPass = renderPass;
@@ -75,7 +77,7 @@ namespace fve {
 			assert(lightIndex < MAX_LIGHTS && "Too many point lights!");
 
 			// update light position
-			//obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0f));
+			obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0f));
 
 			// copy light to ubo
 			ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.0f);
@@ -87,6 +89,18 @@ namespace fve {
 	}
 
 	void PointLightSystem::render(FrameInfo& frameInfo) {
+		// sort lights
+		std::map<float, FveGameObject::id_t> sorted;
+		for (auto& kv : frameInfo.gameObjects) {
+			auto& obj = kv.second;
+			if (obj.pointLight == nullptr) continue;
+
+			// calculate distance
+			auto offset = frameInfo.camera.getPosition() - obj.transform.translation;
+			float distSquared = glm::dot(offset, offset);
+			sorted[distSquared] = obj.getId();
+		}
+
 		pipeline->bind(frameInfo.commandBuffer);
 
 		vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -98,9 +112,10 @@ namespace fve {
 			0,
 			nullptr);
 
-		for (auto& kv : frameInfo.gameObjects) {
-			auto& obj = kv.second;
-			if (obj.pointLight == nullptr) continue;
+		// iterate through sorted map in reverse order
+		for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
+			// use object id to find the light
+			auto& obj = frameInfo.gameObjects.at(it->second);
 
 			PointLightPushConstants push{};
 			push.position = glm::vec4(obj.transform.translation, 1.0f);
