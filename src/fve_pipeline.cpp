@@ -1,5 +1,6 @@
 #include "fve_pipeline.hpp"
 #include "fve_model.hpp"
+#include "fve_assets.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -112,6 +113,8 @@ namespace fve {
 			throw std::runtime_error("failed to create graphics pipeline!");
 		}
 
+		fveAssets.createMaterial(graphicsPipeline, configInfo.pipelineLayout, "defaultmaterial");
+
 	}
 
 	void FvePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
@@ -199,8 +202,8 @@ namespace fve {
 		configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
 		configInfo.dynamicStateInfo.flags = 0;
 
-		configInfo.bindingDescriptions = FveModel::Vertex::getBindingDescriptions();
-		configInfo.attributeDescriptions = FveModel::Vertex::geAttributeDescriptions();
+		configInfo.bindingDescriptions = Vertex::getBindingDescriptions();
+		configInfo.attributeDescriptions = Vertex::geAttributeDescriptions();
 
 	}
 

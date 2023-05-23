@@ -19,8 +19,8 @@
 namespace std {
 
 	template<>
-	struct hash<fve::FveModel::Vertex> {
-		size_t operator()(fve::FveModel::Vertex const& vertex) const {
+	struct hash<fve::Vertex> {
+		size_t operator()(fve::Vertex const& vertex) const {
 			size_t seed = 0;
 			fve::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
 			return seed;
@@ -145,7 +145,7 @@ namespace fve {
 		}
 	}
 
-	std::vector<VkVertexInputBindingDescription> FveModel::Vertex::getBindingDescriptions() {
+	std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescriptions() {
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 		bindingDescriptions[0].binding = 0;
 		bindingDescriptions[0].stride = sizeof(Vertex);
@@ -153,7 +153,7 @@ namespace fve {
 		return bindingDescriptions;
 	}
 
-	std::vector<VkVertexInputAttributeDescription> FveModel::Vertex::geAttributeDescriptions() {
+	std::vector<VkVertexInputAttributeDescription> Vertex::geAttributeDescriptions() {
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 
 		attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
@@ -227,6 +227,8 @@ namespace fve {
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
+
+		// ...
 	}
 
 }

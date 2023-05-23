@@ -77,6 +77,9 @@ namespace fve {
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
+		// persistent uniforms
+		GlobalUbo ubo{};
+
 		// game loop
 		while (!window.shouldClose()) {
 			glfwPollEvents();
@@ -109,11 +112,17 @@ namespace fve {
 
 				// ================ UPDATE ================
 
-				GlobalUbo ubo{};
+				// update the uniforms
 				ubo.projection = camera.getProjection();
 				ubo.view = camera.getView();
 				ubo.inverseView = camera.getInverseView();
 				pointLightSystem.update(frameInfo, ubo);
+
+				// update the sun position
+				auto rotateLight = glm::rotate(glm::mat4(1.0f), frameInfo.frameTime * 0.25f, { 0.0f, 0.0f, -1.0f });
+				ubo.sun.lightDirection = rotateLight * ubo.sun.lightDirection;
+
+				// write the uniform changes
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 

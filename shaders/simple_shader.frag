@@ -6,6 +6,16 @@ layout(location = 2) in vec3 fragNormalWorld;
 
 layout(location = 0) out vec4 outColor;
 
+struct Fog {
+	vec4 color;
+	vec4 dist;
+};
+
+struct Sun {
+	vec4 dir;
+	vec4 color;
+};
+
 struct PointLight {
 	vec4 position;
 	vec4 color;
@@ -16,6 +26,8 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 view;
 	mat4 inverseView;
 	vec4 ambientLightColor;
+	Fog fog;
+	Sun sun;
 	PointLight pointLights[10];
 	int numLights;
 } ubo;
@@ -34,18 +46,36 @@ void main() {
 	vec3 cameraPosWorld = ubo.inverseView[3].xyz;
 	vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
 
+	// ================ SUN LIGHT ================
+	vec3 directionToSun = ubo.sun.dir.xyz - fragPosWorld;
+	directionToSun = normalize(directionToSun);
+
+	// ======== DIFFUSE ========
+	float sunCosAngIncidence = max(dot(surfaceNormal, directionToSun), 0);
+	vec3 sunIntensity = ubo.sun.color.xyz * ubo.sun.color.w;
+	diffuseLight += sunIntensity * sunCosAngIncidence;
+
+	// ======== SPECULAR ========
+	vec3 sunHalfAngle = normalize(directionToSun + viewDirection);
+	float sunBlinnTerm = dot(surfaceNormal, sunHalfAngle);
+	sunBlinnTerm = clamp(sunBlinnTerm, 0, 1);
+	sunBlinnTerm = pow(sunBlinnTerm, 256.0);
+	specularLight += sunIntensity * sunBlinnTerm;
+
+	// ======== POINT LIGHTS ========
 	for (int i = 0; i < ubo.numLights; i++) {
 		PointLight light = ubo.pointLights[i];
 		vec3 directionToLight = light.position.xyz - fragPosWorld;
 		float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
 		directionToLight = normalize(directionToLight);
 
+		// ======== DIFFUSE ========
 		float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
 		vec3 intensity = light.color.xyz * light.color.w * attenuation;
 
 		diffuseLight += intensity * cosAngIncidence;
 
-		// specilar lighting
+		// ======== SPECULAR ========
 		vec3 halfAngle = normalize(directionToLight + viewDirection);
 		float blinnTerm = dot(surfaceNormal, halfAngle);
 		blinnTerm = clamp(blinnTerm, 0, 1);
