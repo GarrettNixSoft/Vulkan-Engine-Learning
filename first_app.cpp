@@ -1,4 +1,4 @@
-#include "first_app.h"
+#include "first_app.hpp"
 
 #include "movement_controller.hpp"
 #include "simple_render_system.hpp"
@@ -95,7 +95,8 @@ namespace fve {
 					frameTime,
 					commandBuffer,
 					camera,
-					globalDescriprorSets[frameIndex]
+					globalDescriprorSets[frameIndex],
+					gameObjects
 				};
 
 				// ================ INPUT ================
@@ -117,7 +118,7 @@ namespace fve {
 				// end offscreen shadow pass
 
 				renderer.beginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+				simpleRenderSystem.renderGameObjects(frameInfo);
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 
@@ -138,7 +139,7 @@ namespace fve {
 		flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
 		flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 
-		gameObjects.push_back(std::move(flatVase));
+		gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
 		model = FveModel::createModelFromFile(device, "models/smooth_vase.obj");
 
@@ -147,14 +148,14 @@ namespace fve {
 		smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
 		smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 
-		gameObjects.push_back(std::move(smoothVase));
+		gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
 		model = FveModel::createModelFromFile(device, "models/quad.obj");
 		auto floor = FveGameObject::createGameObject();
 		floor.model = model;
 		floor.transform.translation = {0.0f, 0.5f, 0.0f};
 		floor.transform.scale = { 3.0f, 1.0f, 3.0f };
-		gameObjects.push_back(std::move(floor));
+		gameObjects.emplace(floor.getId(), std::move(floor));
 	}
 
 }

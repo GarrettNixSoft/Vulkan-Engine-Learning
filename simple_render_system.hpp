@@ -19,7 +19,7 @@ namespace fve {
 		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 		~SimpleRenderSystem();
 
-		void renderGameObjects(FrameInfo& frameInfo, std::vector<FveGameObject>& gameObjects);
+		void renderGameObjects(FrameInfo& frameInfo);
 
 	private:
 		FveDevice& device;

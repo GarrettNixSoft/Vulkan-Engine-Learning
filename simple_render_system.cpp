@@ -60,7 +60,7 @@ namespace fve {
 			pipelineConfig);
 	}
 
-	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo, std::vector<FveGameObject>& gameObjects) {
+	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo) {
 		pipeline->bind(frameInfo.commandBuffer);
 
 		vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -72,7 +72,12 @@ namespace fve {
 			0,
 			nullptr);
 
-		for (auto& obj : gameObjects) {
+		for (auto& kv : frameInfo.gameObjects) {
+			auto& obj = kv.second;
+
+			// skip objects with no model
+			if (obj.model == nullptr) continue;
+
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();
 			push.normalMatrix = obj.transform.normalMatrix();

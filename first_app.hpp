@@ -27,7 +27,7 @@ namespace fve {
 
 		// note: order of declarations matters
 		std::unique_ptr<FveDescriptorPool> globalPool{};
-		std::vector<FveGameObject> gameObjects;
+		FveGameObject::Map gameObjects;
 
 		Game(const Game&) = delete;
 		Game& operator=(const Game&) = delete;

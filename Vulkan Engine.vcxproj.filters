@@ -74,7 +74,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="first_app.h">
+    <ClInclude Include="first_app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fve_pipeline.h">

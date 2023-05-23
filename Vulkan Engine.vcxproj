@@ -180,7 +180,7 @@
     <ClCompile Include="simple_render_system.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="first_app.h" />
+    <ClInclude Include="first_app.hpp" />
     <ClInclude Include="fve_buffer.hpp" />
     <ClInclude Include="fve_camera.hpp" />
     <ClInclude Include="fve_descriptors.hpp" />
