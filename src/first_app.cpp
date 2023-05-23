@@ -1,7 +1,8 @@
 #include "first_app.hpp"
 
 #include "movement_controller.hpp"
-#include "simple_render_system.hpp"
+#include "systems/simple_render_system.hpp"
+#include "systems/point_light_system.hpp"
 #include "fve_camera.hpp"
 #include "fve_buffer.hpp"
 
@@ -17,15 +18,6 @@
 #include <array>
 
 namespace fve {
-
-	struct GlobalUbo {
-		alignas(16) glm::mat4 projectionView{ 1.0f };
-		//alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0, -3.0f, -1.0f });
-		alignas(16) glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f}; // w is light intensity
-		alignas(16) glm::vec3 lightPosition{ -1.0f };
-		alignas(16) glm::vec4 lightColor{ 1.0f }; // w is light intensity
-
-	};
 
 	Game::Game() {
 		globalPool = FveDescriptorPool::Builder(device)
@@ -64,6 +56,8 @@ namespace fve {
 		}
 
 		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+		PointLightSystem pointLightSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+
 		FveCamera camera{};
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
 
@@ -107,7 +101,9 @@ namespace fve {
 				// ================ UPDATE ================
 
 				GlobalUbo ubo{};
-				ubo.projectionView = camera.getProjection() * camera.getView();
+				ubo.projection = camera.getProjection();
+				ubo.view = camera.getView();
+				pointLightSystem.update(frameInfo, ubo);
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 
@@ -119,6 +115,7 @@ namespace fve {
 
 				renderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				pointLightSystem.render(frameInfo);
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 
@@ -133,29 +130,58 @@ namespace fve {
 
 	void Game::loadGameObjects() {
 		std::shared_ptr<FveModel> model = FveModel::createModelFromFile(device, "models/flat_vase.obj");
-
-		auto flatVase = FveGameObject::createGameObject();
-		flatVase.model = model;
-		flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
-		flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
-
-		gameObjects.emplace(flatVase.getId(), std::move(flatVase));
+		{
+			auto flatVase = FveGameObject::createGameObject();
+			flatVase.model = model;
+			flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
+			flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
+			gameObjects.emplace(flatVase.getId(), std::move(flatVase));
+		}
 
 		model = FveModel::createModelFromFile(device, "models/smooth_vase.obj");
-
-		auto smoothVase = FveGameObject::createGameObject();
-		smoothVase.model = model;
-		smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
-		smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
-
-		gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+		{
+			auto smoothVase = FveGameObject::createGameObject();
+			smoothVase.model = model;
+			smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
+			smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
+			gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+		}
 
 		model = FveModel::createModelFromFile(device, "models/quad.obj");
-		auto floor = FveGameObject::createGameObject();
-		floor.model = model;
-		floor.transform.translation = {0.0f, 0.5f, 0.0f};
-		floor.transform.scale = { 3.0f, 1.0f, 3.0f };
-		gameObjects.emplace(floor.getId(), std::move(floor));
+		{
+			auto floor = FveGameObject::createGameObject();
+			floor.model = model;
+			floor.transform.translation = { 0.0f, 0.5f, 0.0f };
+			floor.transform.scale = { 3.0f, 1.0f, 3.0f };
+			gameObjects.emplace(floor.getId(), std::move(floor));
+		}
+
+		/*{
+			auto pointLight = FveGameObject::makePointLight(0.2f);
+			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+		}*/
+
+		// COLORFUL LIGHTS TIME
+		std::vector<glm::vec3> lightColors{
+			{1.f, .1f, .1f},
+			{.1f, .1f, 1.f},
+			{.1f, 1.f, .1f},
+			{1.f, 1.f, .1f},
+			{.1f, 1.f, 1.f},
+			{1.f, 1.f, 1.f}
+		};
+
+		for (int i = 0; i < lightColors.size(); i++) {
+			auto pointLight = FveGameObject::makePointLight(0.2f);
+			pointLight.color = lightColors[i];
+			auto rotateLight = glm::rotate(
+				glm::mat4(1.0f),
+				(i * glm::two_pi<float>()) / lightColors.size(),
+				{0.0f, -1.0f, 0.0f});
+			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f));
+			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+		}
+
 	}
 
 }

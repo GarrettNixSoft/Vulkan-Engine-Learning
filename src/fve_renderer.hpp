@@ -4,7 +4,7 @@
 
 #include "fve_window.hpp"
 #include "fve_device.hpp"
-#include "fve_swap_chain.h"
+#include "fve_swap_chain.hpp"
 
 #include <cassert>
 #include <memory>

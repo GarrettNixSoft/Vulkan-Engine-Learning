@@ -21,6 +21,10 @@ namespace fve {
 		glm::mat3 normalMatrix();
 	};
 
+	struct PointLightComponent {
+		float lightIntensity = 1.0f;
+	};
+
 	class FveGameObject {
 	public:
 		using id_t = unsigned int;
@@ -31,6 +35,8 @@ namespace fve {
 			return FveGameObject{ currentId++ };
 		}
 
+		static FveGameObject makePointLight(float lightIntensity = 10.0f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.0f));
+
 		id_t getId() { return id; }
 
 		FveGameObject(const FveGameObject&) = delete;
@@ -38,9 +44,12 @@ namespace fve {
 		FveGameObject(FveGameObject&&) = default;
 		FveGameObject& operator=(FveGameObject&&) = default;
 
-		std::shared_ptr<FveModel> model{};
 		glm::vec3 color{};
 		TransformComponent transform{};
+
+		// optional pointer components
+		std::shared_ptr<FveModel> model{};
+		std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
 	private:
 		id_t id;

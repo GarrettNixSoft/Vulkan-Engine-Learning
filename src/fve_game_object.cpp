@@ -59,4 +59,13 @@ namespace fve {
             }};
     }
 
+    FveGameObject FveGameObject::makePointLight(float lightIntensity, float radius, glm::vec3 color) {
+        FveGameObject gameObj = FveGameObject::createGameObject();
+        gameObj.color = color;
+        gameObj.transform.scale.x = radius;
+        gameObj.pointLight = std::make_unique<PointLightComponent>();
+        gameObj.pointLight->lightIntensity = lightIntensity;
+        return gameObj;
+    }
+
 }

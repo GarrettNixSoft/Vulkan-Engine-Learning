@@ -63,6 +63,7 @@ if (NOT TINYOBJ_PATH)
 endif()
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.hpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 

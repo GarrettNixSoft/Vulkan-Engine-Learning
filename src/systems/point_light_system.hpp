@@ -1,10 +1,8 @@
 #pragma once
 
-#pragma once
-
 #include "fve_device.hpp"
 #include "fve_game_object.hpp"
-#include "fve_pipeline.h"
+#include "fve_pipeline.hpp"
 #include "fve_camera.hpp"
 #include "fve_frame_info.hpp"
 
@@ -13,13 +11,14 @@
 
 namespace fve {
 
-	class SimpleRenderSystem {
+	class PointLightSystem {
 	public:
 
-		SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-		~SimpleRenderSystem();
+		PointLightSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+		~PointLightSystem();
 
-		void renderGameObjects(FrameInfo& frameInfo);
+		void update(FrameInfo& frameInfo, GlobalUbo &ubo);
+		void render(FrameInfo& frameInfo);
 
 	private:
 		FveDevice& device;
@@ -28,8 +27,8 @@ namespace fve {
 		VkPipelineLayout pipelineLayout;
 
 
-		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
-		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
+		PointLightSystem(const PointLightSystem&) = delete;
+		PointLightSystem& operator=(const PointLightSystem&) = delete;
 
 		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
