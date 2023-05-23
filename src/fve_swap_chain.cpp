@@ -1,4 +1,5 @@
 #include "fve_swap_chain.hpp"
+#include "fve_memory.hpp"
 
 // std
 #include <array>
@@ -45,8 +46,7 @@ namespace fve {
 
 		for (int i = 0; i < depthImages.size(); i++) {
 			vkDestroyImageView(device.device(), depthImageViews[i], nullptr);
-			vkDestroyImage(device.device(), depthImages[i], nullptr);
-			vkFreeMemory(device.device(), depthImageMemorys[i], nullptr);
+			vmaDestroyImage(fveAllocator, depthImages[i], depthImageAllocations[i]);
 		}
 
 		for (auto framebuffer : swapChainFramebuffers) {
@@ -304,7 +304,7 @@ namespace fve {
 		VkExtent2D swapChainExtent = getSwapChainExtent();
 
 		depthImages.resize(imageCount());
-		depthImageMemorys.resize(imageCount());
+		depthImageAllocations.resize(imageCount());
 		depthImageViews.resize(imageCount());
 
 		for (int i = 0; i < depthImages.size(); i++) {
@@ -324,11 +324,17 @@ namespace fve {
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			imageInfo.flags = 0;
 
+			VmaAllocationCreateInfo allocCreateInfo{};
+			allocCreateInfo.memoryTypeBits = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+			VmaAllocationInfo allocInfo{};
+
 			device.createImageWithInfo(
 				imageInfo,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				depthImages[i],
-				depthImageMemorys[i]);
+				allocCreateInfo,
+				depthImageAllocations[i],
+				allocInfo,
+				depthImages[i]);
 
 			VkImageViewCreateInfo viewInfo{};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

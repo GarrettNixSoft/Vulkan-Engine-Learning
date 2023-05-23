@@ -6,6 +6,8 @@
 #include "fve_game_object.hpp"
 #include "fve_descriptors.hpp"
 
+#include <vma/vk_mem_alloc.h>
+
 #include <memory>
 #include <vector>
 
@@ -19,6 +21,7 @@ namespace fve {
 		Game();
 		~Game();
 
+		void init();
 		void run();
 	private:
 		FveWindow window{ WIDTH, HEIGHT, "First Vulkan Game" };

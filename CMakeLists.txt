@@ -62,6 +62,20 @@ if (NOT TINYOBJ_PATH)
   set(TINYOBJ_PATH external/tinyobjloader)
 endif()
 
+if (NOT STB_PATH)
+  message(STATUS "STB_PATH not specified in .env.cmake, using external/stb-master")
+  set(STB_PATH external/stb-master)
+endif()
+
+if (DEFINED VMA_PATH)
+    message(STATUS "Using VMA path specified in .env")
+    set(VMA_PATH "${VMA_PATH}/include")
+endif()
+if (NOT VMA_PATH)
+    message(STATUS "VMA_PATH not specified in .env.cmake, using external/VulkanMemoryAllocator")
+    set(VMA_PATH external/VulkanMemoryAllocator)
+endif()
+
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.hpp)
 
@@ -89,6 +103,7 @@ if (WIN32)
     ${TINYOBJ_PATH}
     ${GLFW_INCLUDE_DIRS}
     ${GLM_PATH}
+    ${STB_PATH}
     )
 
   target_link_directories(${PROJECT_NAME} PUBLIC

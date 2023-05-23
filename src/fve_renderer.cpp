@@ -1,4 +1,5 @@
 #include "fve_renderer.hpp"
+#include "fve_memory.hpp"
 
 #include <iostream>
 #include <stdexcept>

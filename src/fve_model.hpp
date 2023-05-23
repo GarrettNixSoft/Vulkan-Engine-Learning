@@ -2,6 +2,7 @@
 
 #include "fve_device.hpp"
 #include "fve_buffer.hpp"
+#include "fve_types.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -29,8 +30,13 @@ namespace fve {
 			}
 		};
 
+		struct Mesh {
+			std::vector<Vertex> vertices;
+			AllocatedBuffer vertexBuffer;
+		};
+
 		struct Builder {
-			std::vector<Vertex> vertices{};
+			Mesh mesh;
 			std::vector<uint32_t> indices{};
 
 			void loadModel(const std::string& filepath);

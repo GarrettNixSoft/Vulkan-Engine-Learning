@@ -1,5 +1,6 @@
 #include "fve_model.hpp"
 #include "fve_utils.hpp"
+#include "fve_memory.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -31,7 +32,7 @@ namespace std {
 namespace fve {
 
 	FveModel::FveModel(FveDevice& device, const FveModel::Builder& builder) : device{ device } {
-		createVertexBuffers(builder.vertices);
+		createVertexBuffers(builder.mesh.vertices);
 		createIndexBuffers(builder.indices);
 	}
 
@@ -40,7 +41,7 @@ namespace fve {
 	std::unique_ptr<FveModel> FveModel::createModelFromFile(FveDevice& device, const std::string& filepath) {
 		Builder builder;
 		builder.loadModel(filepath);
-		std::cout << "Loaded model: " << filepath << " -- " << "Vertex count: " << builder.vertices.size() << std::endl;
+		std::cout << "Loaded model: " << filepath << " -- " << "Vertex count: " << builder.mesh.vertices.size() << std::endl;
 		return std::make_unique<FveModel>(device, builder);
 	}
 
@@ -57,12 +58,14 @@ namespace fve {
 		
 		// create a staging buffer
 		uint32_t vertexSize = sizeof(vertices[0]);
+
 		FveBuffer stagingBuffer{
+			fveAllocator,
 			device,
 			vertexSize,
 			vertexCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			VMA_MEMORY_USAGE_CPU_TO_GPU
 		};
 
 		// copy the vertex data into the staging buffer
@@ -71,11 +74,12 @@ namespace fve {
 
 		// create a device local buffer on the GPU
 		vertexBuffer = std::make_unique<FveBuffer>(
+			fveAllocator,
 			device,
 			vertexSize,
 			vertexCount,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VMA_MEMORY_USAGE_GPU_ONLY
 		);
 
 		// copy the staging buffer contents into the device local buffer
@@ -97,11 +101,12 @@ namespace fve {
 
 		// create a staging buffer
 		FveBuffer stagingBuffer{
+			fveAllocator,
 			device,
 			indexSize,
 			indexCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			VMA_MEMORY_USAGE_CPU_TO_GPU
 		};
 
 		// copy the index data into the staging buffer
@@ -110,11 +115,12 @@ namespace fve {
 
 		// create a device local buffer on the GPU
 		indexBuffer = std::make_unique<FveBuffer>(
+			fveAllocator,
 			device,
 			indexSize,
 			indexCount,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VMA_MEMORY_USAGE_GPU_ONLY
 		);
 
 		// copy the staging buffer contents into the device local buffer
@@ -173,7 +179,7 @@ namespace fve {
 			throw std::runtime_error(warn + err);
 		}
 
-		vertices.clear();
+		mesh.vertices.clear();
 		indices.clear();
 
 		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
@@ -215,8 +221,8 @@ namespace fve {
 
 				// store the vertex
 				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
+					uniqueVertices[vertex] = static_cast<uint32_t>(mesh.vertices.size());
+					mesh.vertices.push_back(vertex);
 				}
 				indices.push_back(uniqueVertices[vertex]);
 			}

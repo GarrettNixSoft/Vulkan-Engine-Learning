@@ -2,16 +2,19 @@
 
 #include "fve_device.hpp"
 
+#include <vma/vk_mem_alloc.h>
+
 namespace fve {
 
     class FveBuffer {
     public:
         FveBuffer(
+            VmaAllocator allocator,
             FveDevice& device,
             VkDeviceSize instanceSize,
             uint32_t instanceCount,
             VkBufferUsageFlags usageFlags,
-            VkMemoryPropertyFlags memoryPropertyFlags,
+            VmaMemoryUsage vmaUsage,
             VkDeviceSize minOffsetAlignment = 1);
         ~FveBuffer();
 
@@ -37,23 +40,23 @@ namespace fve {
         VkDeviceSize getInstanceSize() const { return instanceSize; }
         VkDeviceSize getAlignmentSize() const { return instanceSize; }
         VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
-        VkMemoryPropertyFlags getMemoryPropertyFlags() const { return memoryPropertyFlags; }
         VkDeviceSize getBufferSize() const { return bufferSize; }
 
     private:
         static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
-        FveDevice& lveDevice;
+        FveDevice& device;
+        VmaAllocator allocator;
+        VmaAllocation allocation;
+
         void* mapped = nullptr;
         VkBuffer buffer = VK_NULL_HANDLE;
-        VkDeviceMemory memory = VK_NULL_HANDLE;
 
         VkDeviceSize bufferSize;
         uint32_t instanceCount;
         VkDeviceSize instanceSize;
         VkDeviceSize alignmentSize;
         VkBufferUsageFlags usageFlags;
-        VkMemoryPropertyFlags memoryPropertyFlags;
     };
 
 }

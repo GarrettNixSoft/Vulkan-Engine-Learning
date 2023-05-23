@@ -1,15 +1,19 @@
-#include "first_app.hpp"
+#include "game.hpp"
 
 #include "movement_controller.hpp"
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
 #include "fve_camera.hpp"
 #include "fve_buffer.hpp"
+#include "fve_memory.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
 
 #include <stdexcept>
 #include <iostream>
@@ -29,16 +33,21 @@ namespace fve {
 
 	Game::~Game() {}
 
+	void Game::init() {
+		// TODO
+	}
+
 	void Game::run() {
 
 		std::vector<std::unique_ptr<FveBuffer>> uboBuffers(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < uboBuffers.size(); i++) {
 			uboBuffers[i] = std::make_unique<FveBuffer>(
+				fveAllocator,
 				device,
 				sizeof(GlobalUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				VMA_MEMORY_USAGE_CPU_TO_GPU,
 				device.properties.limits.minUniformBufferOffsetAlignment);
 			uboBuffers[i]->map();
 		}

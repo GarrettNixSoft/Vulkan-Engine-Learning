@@ -30,26 +30,29 @@ namespace fve {
     }
 
     FveBuffer::FveBuffer(
+        VmaAllocator allocator,
         FveDevice& device,
         VkDeviceSize instanceSize,
         uint32_t instanceCount,
         VkBufferUsageFlags usageFlags,
-        VkMemoryPropertyFlags memoryPropertyFlags,
-        VkDeviceSize minOffsetAlignment)
-        : lveDevice{ device },
+        VmaMemoryUsage vmaUsage,
+        VkDeviceSize minOffsetAlignment) :
+        allocator{allocator},
+        device {device},
         instanceSize{ instanceSize },
         instanceCount{ instanceCount },
-        usageFlags{ usageFlags },
-        memoryPropertyFlags{ memoryPropertyFlags } {
+        usageFlags{ usageFlags } {
+        // align buffer properly
         alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
+        // compute aligned size
         bufferSize = alignmentSize * instanceCount;
-        device.createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);
+        // create the buffer
+        device.createBuffer(bufferSize, usageFlags, buffer, allocation, vmaUsage);
     }
 
     FveBuffer::~FveBuffer() {
         unmap();
-        vkDestroyBuffer(lveDevice.device(), buffer, nullptr);
-        vkFreeMemory(lveDevice.device(), memory, nullptr);
+        vmaDestroyBuffer(allocator, buffer, allocation);
     }
 
     /**
@@ -63,7 +66,7 @@ namespace fve {
      */
     VkResult FveBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
         assert(buffer && memory && "Called map on buffer before create");
-        return vkMapMemory(lveDevice.device(), memory, offset, size, 0, &mapped);
+        return vmaMapMemory(allocator, allocation, &mapped);
     }
 
     /**
@@ -73,7 +76,7 @@ namespace fve {
      */
     void FveBuffer::unmap() {
         if (mapped) {
-            vkUnmapMemory(lveDevice.device(), memory);
+            vmaUnmapMemory(allocator, allocation);
             mapped = nullptr;
         }
     }
@@ -112,12 +115,7 @@ namespace fve {
      * @return VkResult of the flush call
      */
     VkResult FveBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
-        VkMappedMemoryRange mappedRange = {};
-        mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        mappedRange.memory = memory;
-        mappedRange.offset = offset;
-        mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vmaFlushAllocation(allocator, allocation, offset, size);
     }
 
     /**
@@ -132,12 +130,7 @@ namespace fve {
      * @return VkResult of the invalidate call
      */
     VkResult FveBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
-        VkMappedMemoryRange mappedRange = {};
-        mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        mappedRange.memory = memory;
-        mappedRange.offset = offset;
-        mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vmaInvalidateAllocation(allocator, allocation, offset, size);
     }
 
     /**
