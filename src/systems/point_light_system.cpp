@@ -75,12 +75,11 @@ namespace fve {
 			assert(lightIndex < MAX_LIGHTS && "Too many point lights!");
 
 			// update light position
-			obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0f));
-			obj.pointLight->lightIntensity += frameInfo.frameTime;
+			//obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0f));
 
 			// copy light to ubo
 			ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.0f);
-			ubo.pointLights[lightIndex].color = glm::vec4(obj.color, glm::sin(obj.pointLight->lightIntensity) + 1.0f);
+			ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
 			lightIndex++;
 		}
 		ubo.numLights = lightIndex;
