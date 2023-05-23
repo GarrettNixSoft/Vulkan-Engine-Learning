@@ -55,8 +55,8 @@ namespace fve {
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		pipeline = std::make_unique<FvePipeline>(
 			device,
-			"shaders/vert.spv",
-			"shaders/frag.spv",
+			"shaders/simple_shader.vert.spv",
+			"shaders/simple_shader.frag.spv",
 			pipelineConfig);
 	}
 

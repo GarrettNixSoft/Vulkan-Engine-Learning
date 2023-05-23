@@ -11,6 +11,10 @@
 #include <cassert>
 #include <limits>
 
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../"
+#endif
+
 namespace std {
 
 	template<>
@@ -156,13 +160,16 @@ namespace fve {
 	}
 
 	void FveModel::Builder::loadModel(const std::string& filepath) {
+
+		std::string enginePath = ENGINE_DIR + filepath;
+
 		// prepare what tinyobjloader needs to load an OBJ file
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
 		std::string warn, err;
 		// load the OBJ file with tinyobjloader
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, enginePath.c_str())) {
 			throw std::runtime_error(warn + err);
 		}
 
