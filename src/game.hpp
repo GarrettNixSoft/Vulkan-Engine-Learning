@@ -35,6 +35,7 @@ namespace fve {
 		Game(const Game&) = delete;
 		Game& operator=(const Game&) = delete;
 
+		void loadTextures();
 		void loadGameObjects();
 	};
 

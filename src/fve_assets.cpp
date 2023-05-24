@@ -1,6 +1,13 @@
 #include "fve_assets.hpp"
 #include "fve_utils.hpp"
 
+#include <stdexcept>
+#include <iostream>
+
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../"
+#endif
+
 namespace std {
 
 	template<>
@@ -17,6 +24,10 @@ namespace std {
 namespace fve {
 
 	FveAssets fveAssets;
+
+	FveAssets::~FveAssets() {
+		//
+	}
 
 	Material* FveAssets::createMaterial(VkPipeline pipeline, VkPipelineLayout pipelineLayout, const std::string& name) {
 		Material mat;
@@ -48,6 +59,30 @@ namespace fve {
 			return &(*it).second;
 		}
 
+	}
+
+	void FveAssets::loadTexture(FveDevice& device, const std::string& filePath, const std::string& name) {
+
+		std::string enginePath = ENGINE_DIR + filePath;
+
+		AllocatedImage texture;
+		if (loadImageFromFile(device, enginePath.c_str(), texture)) {
+			textures.emplace(name, texture);
+		}
+		else throw std::runtime_error("Failed to load texture " + filePath);
+
+	}
+
+	void FveAssets::cleanUp() {
+		for (auto& kv : meshes) {
+			auto& mesh = kv.second;
+			vmaDestroyBuffer(fveAllocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
+		}
+		for (auto& kv : textures) {
+			auto& texture = kv.second;
+			vmaDestroyImage(fveAllocator, texture.image, texture.allocation);
+			std::cout << "Cleaned up " << kv.first << std::endl;
+		}
 	}
 
 }

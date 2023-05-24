@@ -424,6 +424,22 @@ namespace fve {
 		VK_CHECK(vmaCreateBuffer(fveAllocator, &bufferInfo, &vmaAllocInfo, &buffer, &allocation, nullptr));
 	}
 
+	AllocatedBuffer FveDevice::allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage) {
+
+		VkBuffer buffer;
+		VmaAllocation allocation;
+
+		createBuffer(size, usage, buffer, allocation, vmaUsage);
+
+		AllocatedBuffer result{ buffer, allocation };
+		return result;
+
+	}
+
+	void FveDevice::allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage) {
+		createBuffer(size, usage, target.buffer, target.allocation, vmaUsage);
+	}
+
 	VkCommandBuffer FveDevice::beginSingleTimeCommands() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

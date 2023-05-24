@@ -83,7 +83,7 @@ namespace fve {
 		);
 
 		// copy the staging buffer contents into the device local buffer
-		device.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+		device.copyBuffer(stagingBuffer.getAllocatedBuffer().buffer, vertexBuffer->getAllocatedBuffer().buffer, bufferSize);
 	}
 
 	void FveModel::createIndexBuffers(const std::vector<uint32_t>& indices) {
@@ -124,7 +124,7 @@ namespace fve {
 		);
 
 		// copy the staging buffer contents into the device local buffer
-		device.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+		device.copyBuffer(stagingBuffer.getAllocatedBuffer().buffer, indexBuffer->getAllocatedBuffer().buffer, bufferSize);
 	}
 
 	void FveModel::draw(VkCommandBuffer commandBuffer) {
@@ -137,11 +137,11 @@ namespace fve {
 	}
 
 	void FveModel::bind(VkCommandBuffer commandBuffer) {
-		VkBuffer buffers[] = { vertexBuffer->getBuffer()};
+		VkBuffer buffers[] = { vertexBuffer->getAllocatedBuffer().buffer};
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 		if (hasIndexBuffer) {
-			vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getAllocatedBuffer().buffer, 0, VK_INDEX_TYPE_UINT32);
 		}
 	}
 

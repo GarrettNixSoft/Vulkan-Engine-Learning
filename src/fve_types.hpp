@@ -22,6 +22,11 @@ namespace fve {
 		VmaAllocation allocation;
 	};
 
+	struct AllocatedImage {
+		VkImage image;
+		VmaAllocation allocation;
+	};
+
 	struct Vertex {
 		glm::vec3 position{};
 		glm::vec3 color{};

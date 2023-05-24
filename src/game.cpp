@@ -6,6 +6,7 @@
 #include "fve_camera.hpp"
 #include "fve_buffer.hpp"
 #include "fve_memory.hpp"
+#include "fve_assets.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -28,6 +29,7 @@ namespace fve {
 			.setMaxSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FveSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.build();
+		loadTextures();
 		loadGameObjects();
 	}
 
@@ -145,8 +147,17 @@ namespace fve {
 
 		}
 
+		// clean up all loaded assets
+		fveAssets.cleanUp();
+
 		// wait for the GPU to finish whatever it was doing when the user exits the game
 		vkDeviceWaitIdle(device.device());
+
+	}
+
+	void Game::loadTextures() {
+
+		fveAssets.loadTexture(device, "textures/nixon.png", "nixon");
 
 	}
 

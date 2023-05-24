@@ -47,12 +47,12 @@ namespace fve {
         // compute aligned size
         bufferSize = alignmentSize * instanceCount;
         // create the buffer
-        device.createBuffer(bufferSize, usageFlags, buffer, allocation, vmaUsage);
+        device.allocateBuffer(buffer, bufferSize, usageFlags, vmaUsage);
     }
 
     FveBuffer::~FveBuffer() {
         unmap();
-        vmaDestroyBuffer(allocator, buffer, allocation);
+        vmaDestroyBuffer(allocator, buffer.buffer, buffer.allocation);
     }
 
     /**
@@ -66,7 +66,7 @@ namespace fve {
      */
     VkResult FveBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
         assert(buffer && memory && "Called map on buffer before create");
-        return vmaMapMemory(allocator, allocation, &mapped);
+        return vmaMapMemory(allocator, buffer.allocation, &mapped);
     }
 
     /**
@@ -76,7 +76,7 @@ namespace fve {
      */
     void FveBuffer::unmap() {
         if (mapped) {
-            vmaUnmapMemory(allocator, allocation);
+            vmaUnmapMemory(allocator, buffer.allocation);
             mapped = nullptr;
         }
     }
@@ -115,7 +115,7 @@ namespace fve {
      * @return VkResult of the flush call
      */
     VkResult FveBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
-        return vmaFlushAllocation(allocator, allocation, offset, size);
+        return vmaFlushAllocation(allocator, buffer.allocation, offset, size);
     }
 
     /**
@@ -130,7 +130,7 @@ namespace fve {
      * @return VkResult of the invalidate call
      */
     VkResult FveBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
-        return vmaInvalidateAllocation(allocator, allocation, offset, size);
+        return vmaInvalidateAllocation(allocator, buffer.allocation, offset, size);
     }
 
     /**
@@ -143,7 +143,7 @@ namespace fve {
      */
     VkDescriptorBufferInfo FveBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
         return VkDescriptorBufferInfo{
-            buffer,
+            buffer.buffer,
             offset,
             size,
         };

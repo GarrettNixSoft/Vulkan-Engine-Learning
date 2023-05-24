@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fve_window.hpp"
+#include "fve_types.hpp"
 
 #include <vma/vk_mem_alloc.h>
 
@@ -56,12 +57,10 @@ namespace fve {
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		// Buffer Helper Functions
-		void createBuffer(
-			VkDeviceSize size,
-			VkBufferUsageFlags usage,
-			VkBuffer& buffer,
-			VmaAllocation& allocation,
-			VmaMemoryUsage vmaUsage);
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage vmaUsage);
+		AllocatedBuffer allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage);
+		void allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage);
+
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

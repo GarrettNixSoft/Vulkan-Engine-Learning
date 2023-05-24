@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fve_device.hpp"
+#include "fve_types.hpp"
 
 #include <vma/vk_mem_alloc.h>
 
@@ -34,7 +35,7 @@ namespace fve {
         VkDescriptorBufferInfo descriptorInfoForIndex(int index);
         VkResult invalidateIndex(int index);
 
-        VkBuffer getBuffer() const { return buffer; }
+        AllocatedBuffer getAllocatedBuffer() const { return buffer; }
         void* getMappedMemory() const { return mapped; }
         uint32_t getInstanceCount() const { return instanceCount; }
         VkDeviceSize getInstanceSize() const { return instanceSize; }
@@ -47,10 +48,9 @@ namespace fve {
 
         FveDevice& device;
         VmaAllocator allocator;
-        VmaAllocation allocation;
 
         void* mapped = nullptr;
-        VkBuffer buffer = VK_NULL_HANDLE;
+        AllocatedBuffer buffer;
 
         VkDeviceSize bufferSize;
         uint32_t instanceCount;
