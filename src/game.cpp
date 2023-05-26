@@ -195,6 +195,10 @@ namespace fve {
 		// clean up all loaded assets
 		fveAssets.cleanUp(device);
 
+		vkDeviceWaitIdle(device.device());
+
+		//vmaDestroyAllocator(fveAllocator);
+
 	}
 
 	void Game::loadTextures() {

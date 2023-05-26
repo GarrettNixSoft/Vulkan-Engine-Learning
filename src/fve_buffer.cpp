@@ -37,8 +37,8 @@ namespace fve {
         VkBufferUsageFlags usageFlags,
         VmaMemoryUsage vmaUsage,
         VkDeviceSize minOffsetAlignment) :
-        allocator{allocator},
-        device {device},
+        allocator{ allocator },
+        device{ device },
         instanceSize{ instanceSize },
         instanceCount{ instanceCount },
         usageFlags{ usageFlags } {

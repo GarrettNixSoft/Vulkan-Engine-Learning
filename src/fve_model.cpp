@@ -37,6 +37,8 @@ namespace fve {
 		createIndexBuffers(device, indices);
 	}
 
+	Mesh::~Mesh() {}
+
 	Mesh Mesh::createMeshFromFile(FveDevice& device, const std::string& filepath) {
 
 		Mesh::Builder meshBuilder;
@@ -64,19 +66,11 @@ namespace fve {
 	}
 
 	void Mesh::createVertexBuffers(FveDevice& device, const std::vector<Vertex>& vertices) {
-
-		std::cout << "Assigning vertex count" << std::endl;
-
 		// count the vertices, veryfi we have at least 3
 		vertexCount = static_cast<uint32_t>(vertices.size());
-		assert(vertexCount >= 3 && "Vertex count must be at least 3");
-
-		std::cout << "Assigned vertex count" << std::endl;
 
 		// compute the size of the buffer we need
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-
-		std::cout << "Computed vertex buffer size" << std::endl;
 
 		// TODO: automatically use uint16_t for simple models
 		complexModel = vertexCount > std::numeric_limits<uint16_t>::max();
@@ -93,16 +87,11 @@ namespace fve {
 			VMA_MEMORY_USAGE_CPU_TO_GPU
 		};
 
-		std::cout << "Made vertex staging buffer" << std::endl;
-
 		// copy the vertex data into the staging buffer
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void*)vertices.data());
 
-		std::cout << "Wrote to vertex staging buffer" << std::endl;
-
 		// create a device local buffer on the GPU
-
 		vertexBuffer = std::make_unique<FveBuffer>(
 			fveAllocator,
 			device,
@@ -111,8 +100,6 @@ namespace fve {
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VMA_MEMORY_USAGE_GPU_ONLY
 		);
-
-		std::cout << "Made vertex buffer" << std::endl;
 
 		// copy the staging buffer contents into the device local buffer
 		device.copyBuffer(stagingBuffer.getAllocatedBuffer().buffer, vertexBuffer->getAllocatedBuffer().buffer, bufferSize);
