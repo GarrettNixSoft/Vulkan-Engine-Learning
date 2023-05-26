@@ -30,6 +30,9 @@ namespace fve {
 
 		// note: order of declarations matters
 		std::unique_ptr<FveDescriptorPool> globalPool{};
+		std::unique_ptr<FveDescriptorSetLayout> globalSetLayout;
+		std::unique_ptr<FveDescriptorSetLayout> texturedSetLayout;
+
 		FveGameObject::Map gameObjects;
 
 		Game(const Game&) = delete;

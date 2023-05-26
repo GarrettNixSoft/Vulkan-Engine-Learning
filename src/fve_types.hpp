@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <memory>
 
 namespace fve {
 #define VK_CHECK(x)                                                 \
@@ -27,6 +28,11 @@ namespace fve {
 		VmaAllocation allocation;
 	};
 
+	struct Texture {
+		AllocatedImage allocatedImage;
+		VkImageView imageView;
+	};
+
 	struct Vertex {
 		glm::vec3 position{};
 		glm::vec3 color{};
@@ -39,15 +45,5 @@ namespace fve {
 		bool operator==(const Vertex& other) const {
 			return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
 		}
-	};
-
-	struct Mesh {
-		std::vector<Vertex> vertices;
-		AllocatedBuffer vertexBuffer;
-	};
-
-	struct Material {
-		VkPipeline pipeline;
-		VkPipelineLayout pipelineLayout;
 	};
 }

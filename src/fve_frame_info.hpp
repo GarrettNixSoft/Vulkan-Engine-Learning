@@ -41,6 +41,7 @@ namespace fve {
 		VkCommandBuffer commandBuffer;
 		FveCamera& camera;
 		VkDescriptorSet globalDescriptorSet;
+		VkDescriptorSet texturedDescriptorSet;
 		FveGameObject::Map& gameObjects;
 	};
 

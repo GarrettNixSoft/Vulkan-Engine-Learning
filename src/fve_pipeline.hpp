@@ -30,7 +30,7 @@ namespace fve {
 
 	class FvePipeline {
 	public:
-		FvePipeline(FveDevice& device, const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo);
+		FvePipeline(FveDevice& device, const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo, const std::string& materialName);
 		~FvePipeline();
 
 		FvePipeline(const FvePipeline&) = delete;
@@ -48,7 +48,7 @@ namespace fve {
 		VkShaderModule vertShaderModule;
 		VkShaderModule fragShaderModule;
 
-		void createGraphicsPipeline(const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo);
+		void createGraphicsPipeline(const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo, const std::string& materialName);
 
 		void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 	};

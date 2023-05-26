@@ -65,7 +65,7 @@ namespace fve {
      * @return VkResult of the buffer mapping call
      */
     VkResult FveBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
-        assert(buffer && memory && "Called map on buffer before create");
+        assert(buffer.buffer && "Called map on buffer before create");
         return vmaMapMemory(allocator, buffer.allocation, &mapped);
     }
 

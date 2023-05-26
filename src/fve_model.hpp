@@ -13,31 +13,24 @@
 
 namespace fve {
 
-	class FveModel {
+	class Mesh {
 	public:
 
 		struct Builder {
-			Mesh mesh;
-			Material material;
-
+			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
 
-			void loadModel(const std::string& filepath);
+			void loadMesh(const std::string& filepath);
 		};
 
-		FveModel(FveDevice& device, const FveModel::Builder& builder);
-		~FveModel();
+		Mesh() = default;
 
-		static std::unique_ptr<FveModel> createModelFromFile(FveDevice& device, const std::string& filepath);
+		Mesh(FveDevice& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
-		FveModel(const FveModel&) = delete;
-		FveModel& operator=(const FveModel&) = delete;
+		Mesh(const Mesh&) = delete;
+		Mesh& operator=(const Mesh&) = delete;
 
-		void bind(VkCommandBuffer commandBuffer);
-		void draw(VkCommandBuffer commandBuffer);
-
-	private:
-		FveDevice& device;
+		static Mesh createMeshFromFile(FveDevice& device, const std::string& filepath);
 
 		std::unique_ptr<FveBuffer> vertexBuffer;
 		uint32_t vertexCount;
@@ -46,9 +39,39 @@ namespace fve {
 		bool complexModel = false;
 		std::unique_ptr<FveBuffer> indexBuffer;
 		uint32_t indexCount;
+	private:
+		void createVertexBuffers(FveDevice& device, const std::vector<Vertex>& vertices);
+		void createIndexBuffers(FveDevice& device, const std::vector<uint32_t>& indices);
+	};
 
-		void createVertexBuffers(const std::vector<Vertex>& vertices);
-		void createIndexBuffers(const std::vector<uint32_t>& indices);
+	struct Material {
+		VkDescriptorSet textureSet{ VK_NULL_HANDLE }; // no texture by default
+		VkPipeline pipeline;
+		VkPipelineLayout pipelineLayout;
+	};
+
+	class FveModel {
+	public:
+
+		FveModel() = default;
+
+		FveModel(FveDevice& device, const std::string& meshId, const std::string& materialId);
+		FveModel(FveDevice& device, Mesh* mesh, Material* material);
+
+		~FveModel();
+
+		FveModel(const FveModel&) = delete;
+		FveModel& operator=(const FveModel&) = delete;
+
+		virtual inline Mesh& getMesh() const;
+		virtual inline Material& getMaterial() const;
+
+		void bind(VkCommandBuffer commandBuffer);
+		void draw(VkCommandBuffer commandBuffer);
+
+	private:
+		Mesh* mesh;
+		Material* material;
 	};
 
 }

@@ -14,8 +14,8 @@
 namespace fve {
 
 	FvePipeline::FvePipeline(FveDevice& device, const std::string& vertFilePath,
-		const std::string& fragFilePath, const PipelineConfigInfo& configInfo) : fveDevice{ device } {
-		createGraphicsPipeline(vertFilePath, fragFilePath, configInfo);
+		const std::string& fragFilePath, const PipelineConfigInfo& configInfo, const std::string& materialName) : fveDevice{ device } {
+		createGraphicsPipeline(vertFilePath, fragFilePath, configInfo, materialName);
 	}
 
 	FvePipeline::~FvePipeline() {
@@ -45,7 +45,7 @@ namespace fve {
 
 	}
 
-	void FvePipeline::createGraphicsPipeline(const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo) {
+	void FvePipeline::createGraphicsPipeline(const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo, const std::string& materialName) {
 
 		assert(
 			configInfo.pipelineLayout != VK_NULL_HANDLE &&
@@ -113,7 +113,7 @@ namespace fve {
 			throw std::runtime_error("failed to create graphics pipeline!");
 		}
 
-		fveAssets.createMaterial(graphicsPipeline, configInfo.pipelineLayout, "defaultmaterial");
+		fveAssets.createMaterial(graphicsPipeline, configInfo.pipelineLayout, materialName);
 
 	}
 

@@ -3,6 +3,7 @@
 // std
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 namespace fve {
 
@@ -24,14 +25,14 @@ namespace fve {
 	}
 
 	std::unique_ptr<FveDescriptorSetLayout> FveDescriptorSetLayout::Builder::build() const {
-		return std::make_unique<FveDescriptorSetLayout>(lveDevice, bindings);
+		return std::make_unique<FveDescriptorSetLayout>(device, bindings);
 	}
 
 	// ================ Descriptor Set Layout ================
 
 	FveDescriptorSetLayout::FveDescriptorSetLayout(
-		FveDevice& lveDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
-		: lveDevice{ lveDevice }, bindings{ bindings } {
+		FveDevice& device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
+		: device{ device }, bindings{ bindings } {
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
 		for (auto kv : bindings) {
 			setLayoutBindings.push_back(kv.second);
@@ -43,7 +44,7 @@ namespace fve {
 		descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 
 		if (vkCreateDescriptorSetLayout(
-			lveDevice.device(),
+			device.device(),
 			&descriptorSetLayoutInfo,
 			nullptr,
 			&descriptorSetLayout) != VK_SUCCESS) {
@@ -52,7 +53,7 @@ namespace fve {
 	}
 
 	FveDescriptorSetLayout::~FveDescriptorSetLayout() {
-		vkDestroyDescriptorSetLayout(lveDevice.device(), descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device.device(), descriptorSetLayout, nullptr);
 	}
 
 	// ================ Descriptor Pool Builder ================
@@ -74,17 +75,17 @@ namespace fve {
 	}
 
 	std::unique_ptr<FveDescriptorPool> FveDescriptorPool::Builder::build() const {
-		return std::make_unique<FveDescriptorPool>(lveDevice, maxSets, poolFlags, poolSizes);
+		return std::make_unique<FveDescriptorPool>(device, maxSets, poolFlags, poolSizes);
 	}
 
 	// ================ Descriptor Pool ================
 
 	FveDescriptorPool::FveDescriptorPool(
-		FveDevice& lveDevice,
+		FveDevice& device,
 		uint32_t maxSets,
 		VkDescriptorPoolCreateFlags poolFlags,
 		const std::vector<VkDescriptorPoolSize>& poolSizes)
-		: lveDevice{ lveDevice } {
+		: device{ device } {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo{};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -92,18 +93,17 @@ namespace fve {
 		descriptorPoolInfo.maxSets = maxSets;
 		descriptorPoolInfo.flags = poolFlags;
 
-		if (vkCreateDescriptorPool(lveDevice.device(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
+		if (vkCreateDescriptorPool(device.device(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
 			VK_SUCCESS) {
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
 	}
 
 	FveDescriptorPool::~FveDescriptorPool() {
-		vkDestroyDescriptorPool(lveDevice.device(), descriptorPool, nullptr);
+		vkDestroyDescriptorPool(device.device(), descriptorPool, nullptr);
 	}
 
-	bool FveDescriptorPool::allocateDescriptorSet(
-		const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const {
+	bool FveDescriptorPool::allocateDescriptorSet(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const {
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool;
@@ -112,7 +112,7 @@ namespace fve {
 
 		// Might want to create a "DescriptorPoolManager" class that handles this case, and builds
 		// a new pool whenever an old pool fills up. But this is beyond our current scope
-		if (vkAllocateDescriptorSets(lveDevice.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
+		if (vkAllocateDescriptorSets(device.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
 			return false;
 		}
 		return true;
@@ -120,14 +120,14 @@ namespace fve {
 
 	void FveDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet>& descriptors) const {
 		vkFreeDescriptorSets(
-			lveDevice.device(),
+			device.device(),
 			descriptorPool,
 			static_cast<uint32_t>(descriptors.size()),
 			descriptors.data());
 	}
 
 	void FveDescriptorPool::resetPool() {
-		vkResetDescriptorPool(lveDevice.device(), descriptorPool, 0);
+		vkResetDescriptorPool(device.device(), descriptorPool, 0);
 	}
 
 	// ================ Descriptor Writer ================
@@ -158,6 +158,7 @@ namespace fve {
 
 	FveDescriptorWriter& FveDescriptorWriter::writeImage(
 		uint32_t binding, VkDescriptorImageInfo* imageInfo) {
+		//std::cout << "binding = " << binding << std::endl;
 		assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
 		auto& bindingDescription = setLayout.bindings[binding];
@@ -190,7 +191,7 @@ namespace fve {
 		for (auto& write : writes) {
 			write.dstSet = set;
 		}
-		vkUpdateDescriptorSets(pool.lveDevice.device(), writes.size(), writes.data(), 0, nullptr);
+		vkUpdateDescriptorSets(pool.device.device(), writes.size(), writes.data(), 0, nullptr);
 	}
 
 

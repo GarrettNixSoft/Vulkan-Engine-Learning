@@ -1,4 +1,4 @@
-#include "simple_render_system.hpp"
+#include "textured_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -17,22 +17,22 @@ namespace fve {
 		alignas(16) glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	SimpleRenderSystem::SimpleRenderSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : device{ device } {
+	TexturedRenderSystem::TexturedRenderSystem(FveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : device{ device } {
 		createPipelineLayout(globalSetLayout);
 		createPipeline(renderPass);
 	}
 
-	SimpleRenderSystem::~SimpleRenderSystem() {
+	TexturedRenderSystem::~TexturedRenderSystem() {
 		vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
 	}
 
-	void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+	void TexturedRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange;
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ globalSetLayout };
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ descriptorSetLayout };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -45,7 +45,7 @@ namespace fve {
 		}
 	}
 
-	void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void TexturedRenderSystem::createPipeline(VkRenderPass renderPass) {
 
 		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
@@ -55,13 +55,13 @@ namespace fve {
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		pipeline = std::make_unique<FvePipeline>(
 			device,
-			"shaders/simple_shader.vert.spv",
-			"shaders/simple_shader.frag.spv",
+			"shaders/textured_shader.vert.spv",
+			"shaders/textured_shader.frag.spv",
 			pipelineConfig,
-			"defaultmaterial");
+			"texturedmaterial");
 	}
 
-	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo) {
+	void TexturedRenderSystem::renderGameObjects(FrameInfo& frameInfo) {
 		pipeline->bind(frameInfo.commandBuffer);
 
 		vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -69,18 +69,28 @@ namespace fve {
 			pipelineLayout,
 			0,
 			1,
-			&frameInfo.globalDescriptorSet,
+			&frameInfo.texturedDescriptorSet,
 			0,
 			nullptr);
+
+		// track mesh/material usage
+		Mesh* lastMesh = nullptr;
+		Material* lastMaterial = nullptr;
 
 		for (auto& kv : frameInfo.gameObjects) {
 			auto& obj = kv.second;
 
-			// skip objects with no model
+			// skip objects with no model or no texture
 			if (obj.model == nullptr) continue;
+			if (obj.texture == nullptr) continue;
 
-			// skip textured objects
-			if (obj.texture != nullptr) continue;
+			//only bind the pipeline if it doesn't match with the already bound one
+			if (&obj.model->getMaterial() != lastMaterial) {
+
+				vkCmdBindPipeline(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, obj.model->getMaterial().pipeline);
+				lastMaterial = &obj.model->getMaterial();
+			}
+
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();

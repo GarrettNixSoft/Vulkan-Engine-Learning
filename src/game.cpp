@@ -3,10 +3,12 @@
 #include "movement_controller.hpp"
 #include "systems/simple_render_system.hpp"
 #include "systems/point_light_system.hpp"
+#include "systems/textured_render_system.hpp"
 #include "fve_camera.hpp"
 #include "fve_buffer.hpp"
 #include "fve_memory.hpp"
 #include "fve_assets.hpp"
+#include "fve_initializers.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -25,12 +27,21 @@
 namespace fve {
 
 	Game::Game() {
+
+		const int numSystems = 2;
+
 		globalPool = FveDescriptorPool::Builder(device)
-			.setMaxSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.setMaxSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT * numSystems)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, FveSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.build();
-		loadTextures();
-		loadGameObjects();
+		globalSetLayout = FveDescriptorSetLayout::Builder(device)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
+		texturedSetLayout = FveDescriptorSetLayout::Builder(device)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
 	}
 
 	Game::~Game() {}
@@ -54,20 +65,51 @@ namespace fve {
 			uboBuffers[i]->map();
 		}
 
-		auto globalSetLayout = FveDescriptorSetLayout::Builder(device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();
+		// used to init globalSetLayout here
 
-		std::vector<VkDescriptorSet> globalDescriprorSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < globalDescriprorSets.size(); i++) {
+		// ================ PREPARE ASSETS ================
+		loadTextures();
+
+		// ================ PREPARE RENDERING SYSTEMS ================
+		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+		PointLightSystem pointLightSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+		TexturedRenderSystem texturedRenderSystem{ device, renderer.getSwapChainRenderPass(), texturedSetLayout->getDescriptorSetLayout() };
+
+		// thing
+		std::vector<VkDescriptorSet> globalDescriptorSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSets.size(); i++) {
 			auto bufferInfo = uboBuffers[i]->descriptorInfo();
 			FveDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
-				.build(globalDescriprorSets[i]);
+				.build(globalDescriptorSets[i]);
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
-		PointLightSystem pointLightSystem{ device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSet> texturedDescriptorSets(FveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < texturedDescriptorSets.size(); i++) {
+			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+
+			VkSamplerCreateInfo samplerInfo = fve_init::samplerCreateInfo(VK_FILTER_LINEAR);
+			VkSampler sampler;
+			vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler);
+
+			Material* texturedMat = fveAssets.getMaterial("texturedmaterial");
+
+			VkDescriptorImageInfo imageBufferInfo;
+			imageBufferInfo.sampler = sampler;
+			imageBufferInfo.imageView = fveAssets.getTexture("nixon")->imageView;
+			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			FveDescriptorWriter(*texturedSetLayout, *globalPool)
+				.writeBuffer(0, &bufferInfo)
+				.writeImage(1, &imageBufferInfo)
+				.build(texturedDescriptorSets[i]);
+
+			texturedMat->textureSet = texturedDescriptorSets[i];
+		}
+
+		// ================ PREPARE SCENE ================
+		loadGameObjects();
+		
 
 		FveCamera camera{};
 		camera.setViewTarget(glm::vec3(-1, -2, 2), glm::vec3(0.0f, 0.0f, 2.5f));
@@ -103,7 +145,8 @@ namespace fve {
 					frameTime,
 					commandBuffer,
 					camera,
-					globalDescriprorSets[frameIndex],
+					globalDescriptorSets[frameIndex],
+					texturedDescriptorSets[frameIndex],
 					gameObjects
 				};
 
@@ -138,6 +181,7 @@ namespace fve {
 
 				// order matters with transparent objects involved
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				texturedRenderSystem.renderGameObjects(frameInfo);
 				pointLightSystem.render(frameInfo);
 
 				renderer.endSwapChainRenderPass(commandBuffer);
@@ -147,11 +191,11 @@ namespace fve {
 
 		}
 
-		// clean up all loaded assets
-		fveAssets.cleanUp();
-
 		// wait for the GPU to finish whatever it was doing when the user exits the game
 		vkDeviceWaitIdle(device.device());
+
+		// clean up all loaded assets
+		fveAssets.cleanUp();
 
 	}
 
@@ -162,31 +206,33 @@ namespace fve {
 	}
 
 	void Game::loadGameObjects() {
-		std::shared_ptr<FveModel> model = FveModel::createModelFromFile(device, "models/flat_vase.obj");
+
+		// LOAD MESHES
+		Mesh* flatVaseMesh = fveAssets.loadMeshFromFile(device, "models/flat_vase.obj", "flat_vase_mesh");
+		Mesh* smoothVaseMesh = fveAssets.loadMeshFromFile(device, "models/smooth_vase.obj", "smooth_vase_mesh");
+		Mesh* floorMesh = fveAssets.loadMeshFromFile(device, "models/quad.obj", "floor_mesh");
+
+		Material* defaultMaterial = fveAssets.getMaterial("defaultmaterial");
+		Material* floorMaterial = fveAssets.getMaterial("texturedmaterial");
+
+		FveModel* flatVaseModel = fveAssets.createModel(device, flatVaseMesh, defaultMaterial, "flat_vase_mat");
+		FveModel* smoothVaseModel = fveAssets.createModel(device, smoothVaseMesh, defaultMaterial, "smooth_case_mat");
+		FveModel* floorModel = fveAssets.createModel(device, floorMesh, floorMaterial, "floor_mat");
+		
 		{
 			auto flatVase = FveGameObject::createGameObject();
-			flatVase.model = model;
+			flatVase.model = flatVaseModel;
 			flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
 			flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 			gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 		}
 
-		model = FveModel::createModelFromFile(device, "models/smooth_vase.obj");
 		{
 			auto smoothVase = FveGameObject::createGameObject();
-			smoothVase.model = model;
+			smoothVase.model = smoothVaseModel;
 			smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
 			smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 			gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
-		}
-
-		model = FveModel::createModelFromFile(device, "models/quad.obj");
-		{
-			auto floor = FveGameObject::createGameObject();
-			floor.model = model;
-			floor.transform.translation = { 0.0f, 0.5f, 0.0f };
-			floor.transform.scale = { 3.0f, 1.0f, 3.0f };
-			gameObjects.emplace(floor.getId(), std::move(floor));
 		}
 
 		/*{
@@ -213,6 +259,52 @@ namespace fve {
 				{0.0f, -1.0f, 0.0f});
 			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f));
 			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+		}
+
+		// CREATE SOMETHING WITH A TEXTURE
+		
+
+		//std::cout << "Made a sampler" << std::endl;
+
+		/*if (texturedMat == nullptr) {
+			std::cerr << "couldn't find texturedmaterial" << std::endl;
+			throw std::runtime_error("lost a material");
+		}*/
+
+		//globalPool->allocateDescriptorSet(globalSetLayout->getDescriptorSetLayout(), texturedMat->textureSet);
+
+		/*if (texturedMat->textureSet == VK_NULL_HANDLE) {
+			std::cerr << "why didn't that work" << std::endl;
+		}
+
+		std::cout << "Made a descriptor set" << std::endl;
+
+		Texture* nixon = fveAssets.getTexture("nixon");
+		if (nixon == nullptr) {
+			std::cerr << "nixon was impeached" << std::endl;
+		}
+		else {
+			std::cout << "retrieved nixon" << std::endl;
+		}
+
+		if (texturedMat->textureSet == VK_NULL_HANDLE) {
+			std::cerr << "missing descriptor set" << std::endl;
+		}*/
+
+		//FveDescriptorWriter descriptorWriter(*globalSetLayout.get(), *globalPool.get());
+
+		// TEXTURE THE FLOOR
+		{
+			auto floor = FveGameObject::createGameObject();
+			floor.model = floorModel;
+			floor.transform.translation = { 0.0f, 0.5f, 0.0f };
+			floor.transform.scale = { 3.0f, 1.0f, 3.0f };
+
+			TextureComponent texComp{"nixon"};
+
+			floor.texture = std::make_unique<TextureComponent>(texComp);
+
+			gameObjects.emplace(floor.getId(), std::move(floor));
 		}
 
 	}

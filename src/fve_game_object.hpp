@@ -25,6 +25,10 @@ namespace fve {
 		float lightIntensity = 1.0f;
 	};
 
+	struct TextureComponent {
+		std::string textureName;
+	};
+
 	class FveGameObject {
 	public:
 		using id_t = unsigned int;
@@ -48,8 +52,9 @@ namespace fve {
 		TransformComponent transform{};
 
 		// optional pointer components
-		std::shared_ptr<FveModel> model{};
+		FveModel* model = nullptr;
 		std::unique_ptr<PointLightComponent> pointLight = nullptr;
+		std::shared_ptr<TextureComponent> texture = nullptr;
 
 	private:
 		id_t id;

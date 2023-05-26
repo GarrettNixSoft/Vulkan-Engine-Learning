@@ -1,6 +1,7 @@
 #include "fve_model.hpp"
 #include "fve_utils.hpp"
 #include "fve_memory.hpp"
+#include "fve_assets.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -31,27 +32,51 @@ namespace std {
 
 namespace fve {
 
-	FveModel::FveModel(FveDevice& device, const FveModel::Builder& builder) : device{ device } {
-		createVertexBuffers(builder.mesh.vertices);
-		createIndexBuffers(builder.indices);
+	Mesh::Mesh(FveDevice& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
+		createVertexBuffers(device, vertices);
+		createIndexBuffers(device, indices);
 	}
+
+	Mesh Mesh::createMeshFromFile(FveDevice& device, const std::string& filepath) {
+
+		Mesh::Builder meshBuilder;
+		meshBuilder.loadMesh(filepath);
+		std::cout << "Loaded mesh: " << filepath << " -- " << "Vertex count: " << meshBuilder.vertices.size() << std::endl;
+		return Mesh(device, meshBuilder.vertices, meshBuilder.indices);
+
+	}
+
+	FveModel::FveModel(FveDevice& device, const std::string& meshId, const std::string& materialId) {
+		mesh = fveAssets.getMesh(meshId);
+		material = fveAssets.getMaterial(materialId);
+	}
+
+	FveModel::FveModel(FveDevice& device, Mesh* mesh, Material* material) : mesh { mesh }, material{ material } {}
 
 	FveModel::~FveModel() {}
 
-	std::unique_ptr<FveModel> FveModel::createModelFromFile(FveDevice& device, const std::string& filepath) {
-		Builder builder;
-		builder.loadModel(filepath);
-		std::cout << "Loaded model: " << filepath << " -- " << "Vertex count: " << builder.mesh.vertices.size() << std::endl;
-		return std::make_unique<FveModel>(device, builder);
+	Mesh& FveModel::getMesh() const {
+		return *mesh;
 	}
 
-	void FveModel::createVertexBuffers(const std::vector<Vertex>& vertices) {
+	Material& FveModel::getMaterial() const {
+		return *material;
+	}
+
+	void Mesh::createVertexBuffers(FveDevice& device, const std::vector<Vertex>& vertices) {
+
+		std::cout << "Assigning vertex count" << std::endl;
+
 		// count the vertices, veryfi we have at least 3
 		vertexCount = static_cast<uint32_t>(vertices.size());
 		assert(vertexCount >= 3 && "Vertex count must be at least 3");
 
+		std::cout << "Assigned vertex count" << std::endl;
+
 		// compute the size of the buffer we need
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
+
+		std::cout << "Computed vertex buffer size" << std::endl;
 
 		// TODO: automatically use uint16_t for simple models
 		complexModel = vertexCount > std::numeric_limits<uint16_t>::max();
@@ -68,11 +93,16 @@ namespace fve {
 			VMA_MEMORY_USAGE_CPU_TO_GPU
 		};
 
+		std::cout << "Made vertex staging buffer" << std::endl;
+
 		// copy the vertex data into the staging buffer
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void*)vertices.data());
 
+		std::cout << "Wrote to vertex staging buffer" << std::endl;
+
 		// create a device local buffer on the GPU
+
 		vertexBuffer = std::make_unique<FveBuffer>(
 			fveAllocator,
 			device,
@@ -82,11 +112,15 @@ namespace fve {
 			VMA_MEMORY_USAGE_GPU_ONLY
 		);
 
+		std::cout << "Made vertex buffer" << std::endl;
+
 		// copy the staging buffer contents into the device local buffer
 		device.copyBuffer(stagingBuffer.getAllocatedBuffer().buffer, vertexBuffer->getAllocatedBuffer().buffer, bufferSize);
+
+		std::cout << "Copied vertex staging buffer to vertex buffer" << std::endl;
 	}
 
-	void FveModel::createIndexBuffers(const std::vector<uint32_t>& indices) {
+	void Mesh::createIndexBuffers(FveDevice& device, const std::vector<uint32_t>& indices) {
 		// count the indices, determine if we're using an index buffer for this model
 		indexCount = static_cast<uint32_t>(indices.size());
 		hasIndexBuffer = indexCount > 0;
@@ -128,20 +162,20 @@ namespace fve {
 	}
 
 	void FveModel::draw(VkCommandBuffer commandBuffer) {
-		if (hasIndexBuffer) {
-			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+		if (mesh->hasIndexBuffer) {
+			vkCmdDrawIndexed(commandBuffer, mesh->indexCount, 1, 0, 0, 0);
 		}
 		else {
-			vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+			vkCmdDraw(commandBuffer, mesh->vertexCount, 1, 0, 0);
 		}
 	}
 
 	void FveModel::bind(VkCommandBuffer commandBuffer) {
-		VkBuffer buffers[] = { vertexBuffer->getAllocatedBuffer().buffer};
+		VkBuffer buffers[] = { mesh->vertexBuffer->getAllocatedBuffer().buffer};
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
-		if (hasIndexBuffer) {
-			vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getAllocatedBuffer().buffer, 0, VK_INDEX_TYPE_UINT32);
+		if (mesh->hasIndexBuffer) {
+			vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getAllocatedBuffer().buffer, 0, VK_INDEX_TYPE_UINT32);
 		}
 	}
 
@@ -161,11 +195,10 @@ namespace fve {
 		attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
 		attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
 
-
 		return attributeDescriptions;
 	}
 
-	void FveModel::Builder::loadModel(const std::string& filepath) {
+	void Mesh::Builder::loadMesh(const std::string& filepath) {
 
 		std::string enginePath = ENGINE_DIR + filepath;
 
@@ -179,7 +212,7 @@ namespace fve {
 			throw std::runtime_error(warn + err);
 		}
 
-		mesh.vertices.clear();
+		vertices.clear();
 		indices.clear();
 
 		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
@@ -221,8 +254,8 @@ namespace fve {
 
 				// store the vertex
 				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(mesh.vertices.size());
-					mesh.vertices.push_back(vertex);
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
 				}
 				indices.push_back(uniqueVertices[vertex]);
 			}

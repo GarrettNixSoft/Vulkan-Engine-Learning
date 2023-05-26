@@ -13,7 +13,7 @@ namespace fve {
     public:
         class Builder {
         public:
-            Builder(FveDevice& lveDevice) : lveDevice{ lveDevice } {}
+            Builder(FveDevice& device) : device{ device } {}
 
             Builder& addBinding(
                 uint32_t binding,
@@ -23,7 +23,7 @@ namespace fve {
             std::unique_ptr<FveDescriptorSetLayout> build() const;
 
         private:
-            FveDevice& lveDevice;
+            FveDevice& device;
             std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings{};
         };
 
@@ -36,7 +36,7 @@ namespace fve {
         VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }
 
     private:
-        FveDevice& lveDevice;
+        FveDevice& device;
         VkDescriptorSetLayout descriptorSetLayout;
         std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings;
 
@@ -47,7 +47,7 @@ namespace fve {
     public:
         class Builder {
         public:
-            Builder(FveDevice& lveDevice) : lveDevice{ lveDevice } {}
+            Builder(FveDevice& device) : device{ device } {}
 
             Builder& addPoolSize(VkDescriptorType descriptorType, uint32_t count);
             Builder& setPoolFlags(VkDescriptorPoolCreateFlags flags);
@@ -55,14 +55,14 @@ namespace fve {
             std::unique_ptr<FveDescriptorPool> build() const;
 
         private:
-            FveDevice& lveDevice;
+            FveDevice& device;
             std::vector<VkDescriptorPoolSize> poolSizes{};
             uint32_t maxSets = 1000;
             VkDescriptorPoolCreateFlags poolFlags = 0;
         };
 
         FveDescriptorPool(
-            FveDevice& lveDevice,
+            FveDevice& device,
             uint32_t maxSets,
             VkDescriptorPoolCreateFlags poolFlags,
             const std::vector<VkDescriptorPoolSize>& poolSizes);
@@ -78,7 +78,7 @@ namespace fve {
         void resetPool();
 
     private:
-        FveDevice& lveDevice;
+        FveDevice& device;
         VkDescriptorPool descriptorPool;
 
         friend class FveDescriptorWriter;

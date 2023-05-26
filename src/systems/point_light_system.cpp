@@ -62,7 +62,8 @@ namespace fve {
 			device,
 			"shaders/point_light.vert.spv",
 			"shaders/point_light.frag.spv",
-			pipelineConfig);
+			pipelineConfig,
+			"pointlightmaterial");
 	}
 
 	void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo) {
