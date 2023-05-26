@@ -223,20 +223,28 @@ namespace fve {
 
 	void FveAssets::cleanUp(FveDevice& device) {
 
+		std::cout << "Destroying meshes" << std::endl;
+
 		// find all allocations
 		//std::vector<VmaAllocation> allocations{};
 
-		for (auto& kv : meshes) {
-			auto& mesh = kv.second;
-			vmaDestroyBuffer(fveAllocator, mesh.vertexBuffer->getAllocatedBuffer().buffer, mesh.vertexBuffer->getAllocatedBuffer().allocation);
-			if (mesh.hasIndexBuffer) {
-				vmaDestroyBuffer(fveAllocator, mesh.indexBuffer->getAllocatedBuffer().buffer, mesh.indexBuffer->getAllocatedBuffer().allocation);
-			}
+		//for (auto& kv : meshes) {
+		//	auto& mesh = kv.second;
+		//	vmaDestroyBuffer(fveAllocator, mesh.vertexBuffer->getAllocatedBuffer().buffer, mesh.vertexBuffer->getAllocatedBuffer().allocation);
+		//	if (mesh.hasIndexBuffer) {
+		//		vmaDestroyBuffer(fveAllocator, mesh.indexBuffer->getAllocatedBuffer().buffer, mesh.indexBuffer->getAllocatedBuffer().allocation);
+		//	}
 
-			//vmaFreeMemory(fveAllocator, mesh.indexBuffer->getAllocatedBuffer().allocation);
+		//	std::cout << "Destroyed mesh: " << kv.first << std::endl;
 
-			//allocations.push_back(mesh.vertexBuffer->getAllocatedBuffer().allocation);
-		}
+		//	//vmaFreeMemory(fveAllocator, mesh.indexBuffer->getAllocatedBuffer().allocation);
+
+		//	//allocations.push_back(mesh.vertexBuffer->getAllocatedBuffer().allocation);
+		//}
+
+		std::cout << "Destroying textures" << std::endl;
+
+
 		for (auto& kv : textures) {
 			auto& texture = kv.second;
 			vkDestroyImageView(device.device(), texture.imageView, nullptr);
@@ -247,10 +255,12 @@ namespace fve {
 
 			//allocations.push_back(texture.allocatedImage.allocation);
 		}
+
+		std::cout << "Destroying samplers" << std::endl;
+
 		for (auto& kv : samplers) {
 			auto& sampler = kv.second;
 			vkDestroySampler(device.device(), sampler, nullptr);
-
 		}
 
 		// free it all!
@@ -263,6 +273,13 @@ namespace fve {
 		//		//
 		//	}
 		//}
+
+		//materials.clear();
+		meshes.clear();
+		//models.clear();
+		//textures.clear();
+		//samplers.clear();
+
 	}
 
 }

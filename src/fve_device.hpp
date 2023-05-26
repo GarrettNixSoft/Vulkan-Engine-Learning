@@ -57,9 +57,9 @@ namespace fve {
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		// Buffer Helper Functions
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage vmaUsage);
-		AllocatedBuffer allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage);
-		void allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage);
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage vmaUsage, const char* debugFlag = "defaultDebugFlag");
+		AllocatedBuffer allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage, const char* debugFlag = "defaultDebugFlag");
+		void allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage, const char* debugFlag = "defaultDebugFlag");
 
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer commandBuffer);

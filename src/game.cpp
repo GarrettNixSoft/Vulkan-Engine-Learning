@@ -9,6 +9,7 @@
 #include "fve_memory.hpp"
 #include "fve_assets.hpp"
 #include "fve_initializers.hpp"
+#include "fve_constants.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -26,7 +27,7 @@
 
 namespace fve {
 
-	Game::Game() {
+	Game::Game(FveWindow& window, FveDevice& device) : window{ window }, device{ device } {
 
 		const int numSystems = 2;
 
@@ -44,7 +45,9 @@ namespace fve {
 			.build();
 	}
 
-	Game::~Game() {}
+	Game::~Game() {
+		fveAssets.cleanUp(device);
+	}
 
 	void Game::init() {
 		// TODO
@@ -61,6 +64,7 @@ namespace fve {
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VMA_MEMORY_USAGE_CPU_TO_GPU,
+				"uboBuffers",
 				device.properties.limits.minUniformBufferOffsetAlignment);
 			uboBuffers[i]->map();
 		}
@@ -115,7 +119,7 @@ namespace fve {
 		auto viewerObject = FveGameObject::createGameObject();
 		viewerObject.transform.translation.z = -2.5f;
 		MovementController cameraController{};
-		cameraController.init(window.getGLFWwindow(), WIDTH, HEIGHT);
+		cameraController.init(window.getGLFWwindow(), fve::WIDTH, fve::HEIGHT);
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -192,12 +196,7 @@ namespace fve {
 		// wait for the GPU to finish whatever it was doing when the user exits the game
 		vkDeviceWaitIdle(device.device());
 
-		// clean up all loaded assets
-		fveAssets.cleanUp(device);
-
-		vkDeviceWaitIdle(device.device());
-
-		//vmaDestroyAllocator(fveAllocator);
+		std::cout << "Destroying UBO buffers" << std::endl;
 
 	}
 

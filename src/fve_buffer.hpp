@@ -16,6 +16,7 @@ namespace fve {
             uint32_t instanceCount,
             VkBufferUsageFlags usageFlags,
             VmaMemoryUsage vmaUsage,
+            const char* debugFlag = "defaultDebugFlag",
             VkDeviceSize minOffsetAlignment = 1);
         ~FveBuffer();
 

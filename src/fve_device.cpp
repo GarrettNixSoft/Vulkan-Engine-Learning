@@ -1,6 +1,7 @@
 #include "fve_device.hpp"
 #include "fve_types.hpp"
 #include "fve_memory.hpp"
+#include "fve_globals.hpp"
 
 #include <vma/vk_mem_alloc.h>
 
@@ -9,6 +10,8 @@
 #include <iostream>
 #include <set>
 #include <unordered_set>
+
+extern int BUFFER_ALLOCATIONS;
 
 namespace fve {
 
@@ -60,6 +63,8 @@ namespace fve {
 	}
 
 	FveDevice::~FveDevice() {
+		std::cout << "Destroying device" << std::endl;
+
 		vkDestroyCommandPool(device_, commandPool, nullptr);
 		vkDestroyDevice(device_, nullptr);
 
@@ -69,6 +74,8 @@ namespace fve {
 
 		vkDestroySurfaceKHR(instance_, surface_, nullptr);
 		vkDestroyInstance(instance_, nullptr);
+
+		std::cout << "Device destroyed" << std::endl;
 	}
 
 	void FveDevice::createInstance() {
@@ -408,7 +415,7 @@ namespace fve {
 	}
 
 	void FveDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-									VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage vmaUsage) {
+									VkBuffer& buffer, VmaAllocation& allocation, VmaMemoryUsage vmaUsage, const char* debugFlag) {
 		// describe the buffer
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -419,25 +426,31 @@ namespace fve {
 		// tell VMA what we want
 		VmaAllocationCreateInfo vmaAllocInfo{};
 		vmaAllocInfo.usage = vmaUsage;
+		vmaAllocInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+		vmaAllocInfo.pUserData = (void *) debugFlag;
 
 		// allocate the buffer with VMA
 		VK_CHECK(vmaCreateBuffer(fveAllocator, &bufferInfo, &vmaAllocInfo, &buffer, &allocation, nullptr));
+
+		BUFFER_ALLOCATIONS++;
+		std::cout << "New buffer! Active allocations: " << BUFFER_ALLOCATIONS << std::endl;
+		
 	}
 
-	AllocatedBuffer FveDevice::allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage) {
+	AllocatedBuffer FveDevice::allocateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage, const char* debugFlag) {
 
 		VkBuffer buffer;
 		VmaAllocation allocation;
 
-		createBuffer(size, usage, buffer, allocation, vmaUsage);
+		createBuffer(size, usage, buffer, allocation, vmaUsage, debugFlag);
 
 		AllocatedBuffer result{ buffer, allocation };
 		return result;
 
 	}
 
-	void FveDevice::allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage) {
-		createBuffer(size, usage, target.buffer, target.allocation, vmaUsage);
+	void FveDevice::allocateBuffer(AllocatedBuffer& target, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage, const char* debugFlag) {
+		createBuffer(size, usage, target.buffer, target.allocation, vmaUsage, debugFlag);
 	}
 
 	VkCommandBuffer FveDevice::beginSingleTimeCommands() {

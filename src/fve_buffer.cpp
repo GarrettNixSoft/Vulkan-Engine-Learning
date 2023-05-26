@@ -6,10 +6,14 @@
  */
 
 #include "fve_buffer.hpp"
+#include "fve_globals.hpp"
 
  // std
 #include <cassert>
 #include <cstring>
+#include <iostream>
+
+int BUFFER_ALLOCATIONS = 0;
 
 namespace fve {
 
@@ -36,6 +40,7 @@ namespace fve {
         uint32_t instanceCount,
         VkBufferUsageFlags usageFlags,
         VmaMemoryUsage vmaUsage,
+        const char* debugFlag,
         VkDeviceSize minOffsetAlignment) :
         allocator{ allocator },
         device{ device },
@@ -47,12 +52,20 @@ namespace fve {
         // compute aligned size
         bufferSize = alignmentSize * instanceCount;
         // create the buffer
-        device.allocateBuffer(buffer, bufferSize, usageFlags, vmaUsage);
+        device.allocateBuffer(buffer, bufferSize, usageFlags, vmaUsage, debugFlag);
     }
 
     FveBuffer::~FveBuffer() {
+        // check the buffer info before it's destroyed
+        VmaAllocationInfo allocInfo{};
+        vmaGetAllocationInfo(allocator, buffer.allocation, &allocInfo);
+        // destroy the buffer
         unmap();
         vmaDestroyBuffer(allocator, buffer.buffer, buffer.allocation);
+        BUFFER_ALLOCATIONS--;
+        std::cout << "Destroyed buffer! Active allocations: " << BUFFER_ALLOCATIONS << std::endl;
+        // debug
+        if (allocInfo.pUserData) std::cout << "The buffer destroyed had user pointer data: " << (const char*)allocInfo.pUserData << std::endl;
     }
 
     /**

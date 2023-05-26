@@ -14,6 +14,7 @@ namespace fve {
 	}
 
 	FveRenderer::~FveRenderer() {
+		std::cout << "Destroying renderer" << std::endl;
 		freeCommandBuffers();
 	}
 

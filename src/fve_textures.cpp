@@ -33,7 +33,7 @@ namespace fve {
 		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
 		// create a staging buffer
-		std::unique_ptr<FveBuffer> stagingBuffer = std::make_unique<FveBuffer>(
+		FveBuffer stagingBuffer = FveBuffer(
 			fveAllocator,
 			device,
 			imageSize,
@@ -43,8 +43,8 @@ namespace fve {
 		);
 
 		// copy the image data into the staging buffer
-		stagingBuffer->map();
-		stagingBuffer->writeToBuffer(pixelPtr);
+		stagingBuffer.map();
+		stagingBuffer.writeToBuffer(pixelPtr);
 
 		// image data is now stored in the staging buffer, so we can free it from stbi
 		stbi_image_free(pixels);
@@ -110,7 +110,7 @@ namespace fve {
 		copyRegion.imageExtent = imageExtent; // the whole image
 
 		//copy the buffer into the image
-		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer->getAllocatedBuffer().buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer.getAllocatedBuffer().buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 		// create a barrier for the final format transfer
 		VkImageMemoryBarrier imageReadableBarrier = imageTransferBarrier;

@@ -15,17 +15,15 @@ namespace fve {
 
 	class Game {
 	public:
-		static constexpr int WIDTH = 1920;
-		static constexpr int HEIGHT = 1080;
 
-		Game();
+		Game(FveWindow& window, FveDevice& device);
 		~Game();
 
 		void init();
 		void run();
 	private:
-		FveWindow window{ WIDTH, HEIGHT, "First Vulkan Game" };
-		FveDevice device{ window };
+		FveWindow& window;
+		FveDevice& device;
 		FveRenderer renderer{window, device};
 
 		// note: order of declarations matters

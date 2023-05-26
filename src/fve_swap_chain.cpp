@@ -34,6 +34,8 @@ namespace fve {
 	}
 
 	FveSwapChain::~FveSwapChain() {
+		std::cout << "Destroying swap chain" << std::endl;
+
 		for (auto imageView : swapChainImageViews) {
 			vkDestroyImageView(device.device(), imageView, nullptr);
 		}
@@ -48,6 +50,7 @@ namespace fve {
 			vkDestroyImageView(device.device(), depthImageViews[i], nullptr);
 			vmaDestroyImage(fveAllocator, depthImages[i], depthImageAllocations[i]);
 		}
+		depthImageAllocations.clear();
 
 		for (auto framebuffer : swapChainFramebuffers) {
 			vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
@@ -61,6 +64,8 @@ namespace fve {
 			vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
 			vkDestroyFence(device.device(), inFlightFences[i], nullptr);
 		}
+
+		std::cout << "Swap chain destroyed" << std::endl;
 	}
 
 	VkResult FveSwapChain::acquireNextImage(uint32_t* imageIndex) {
