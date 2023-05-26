@@ -39,7 +39,13 @@ namespace fve {
 
 		void loadTexture(FveDevice& device, const std::string& filePath, const std::string& name);
 
-		void cleanUp();
+		VkSampler* createSampler(FveDevice& device, VkFilter filters, VkSamplerAddressMode addressMode, const std::string& sampelerId);
+
+		VkSampler* createSampler(FveDevice& device, VkFilter filters, const std::string& sampelerId);
+
+		VkSampler* getSampler(const std::string& samplerId);
+
+		void cleanUp(FveDevice& device);
 	private:
 		std::unordered_map<std::string, Material> materials;
 		std::unordered_map<std::string, Mesh> meshes;
@@ -47,6 +53,8 @@ namespace fve {
 		std::unordered_map<std::string, FveModel> models;
 
 		std::unordered_map<std::string, Texture> textures;
+
+		std::unordered_map<std::string, VkSampler> samplers;
 	};
 
 	extern FveAssets fveAssets;

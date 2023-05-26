@@ -88,9 +88,7 @@ namespace fve {
 		for (int i = 0; i < texturedDescriptorSets.size(); i++) {
 			auto bufferInfo = uboBuffers[i]->descriptorInfo();
 
-			VkSamplerCreateInfo samplerInfo = fve_init::samplerCreateInfo(VK_FILTER_LINEAR);
-			VkSampler sampler;
-			vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler);
+			VkSampler sampler = *fveAssets.createSampler(device, VK_FILTER_LINEAR, "default_sampler");
 
 			Material* texturedMat = fveAssets.getMaterial("texturedmaterial");
 
@@ -195,7 +193,7 @@ namespace fve {
 		vkDeviceWaitIdle(device.device());
 
 		// clean up all loaded assets
-		fveAssets.cleanUp();
+		fveAssets.cleanUp(device);
 
 	}
 

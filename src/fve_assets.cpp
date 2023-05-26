@@ -171,15 +171,70 @@ namespace fve {
 
 	}
 
-	void FveAssets::cleanUp() {
+	VkSampler* FveAssets::createSampler(FveDevice& device, VkFilter filters, VkSamplerAddressMode addressMode, const std::string& samplerId) {
+
+		// check if the sampler already exists
+		VkSampler* existing = getSampler(samplerId);
+		if (existing != nullptr) {
+			std::cerr << "Tried to create a sampler that already exists! (id: " << samplerId << ")" << std::endl;
+			return existing;
+		}
+
+		// create the new sampler
+		VkSamplerCreateInfo samplerInfo = fve_init::samplerCreateInfo(VK_FILTER_LINEAR, addressMode);
+		VkSampler sampler;
+		vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler);
+
+		// store it
+		samplers.emplace(samplerId, sampler);
+		return &samplers[samplerId];
+	}
+
+	VkSampler* FveAssets::createSampler(FveDevice& device, VkFilter filters, const std::string& samplerId) {
+
+		// check if the sampler already exists
+		VkSampler* existing = getSampler(samplerId);
+		if (existing != nullptr) {
+			std::cerr << "Tried to create a sampler that already exists! (id: " << samplerId << ")" << std::endl;
+			return existing;
+		}
+
+		// create the new sampler
+		VkSamplerCreateInfo samplerInfo = fve_init::samplerCreateInfo(VK_FILTER_LINEAR);
+		VkSampler sampler;
+		vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler);
+
+		// store it
+		samplers.emplace(samplerId, sampler);
+		return &samplers[samplerId];
+	}
+
+	VkSampler* FveAssets::getSampler(const std::string& samplerId) {
+
+		auto it = samplers.find(samplerId);
+		if (it == samplers.end()) {
+			return nullptr;
+		}
+		else {
+			return &(*it).second;
+		}
+
+	}
+
+	void FveAssets::cleanUp(FveDevice& device) {
 		for (auto& kv : meshes) {
 			auto& mesh = kv.second;
 			vmaDestroyBuffer(fveAllocator, mesh.vertexBuffer->getAllocatedBuffer().buffer, mesh.vertexBuffer->getAllocatedBuffer().allocation);
 		}
 		for (auto& kv : textures) {
 			auto& texture = kv.second;
+			vkDestroyImageView(device.device(), texture.imageView, nullptr);
 			vmaDestroyImage(fveAllocator, texture.allocatedImage.image, texture.allocatedImage.allocation);
 			std::cout << "Cleaned up " << kv.first << std::endl;
+		}
+		for (auto& kv : samplers) {
+			auto& sampler = kv.second;
+			vkDestroySampler(device.device(), sampler, nullptr);
 		}
 	}
 
