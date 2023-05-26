@@ -103,8 +103,6 @@ namespace fve {
 
 		// copy the staging buffer contents into the device local buffer
 		device.copyBuffer(stagingBuffer.getAllocatedBuffer().buffer, vertexBuffer->getAllocatedBuffer().buffer, bufferSize);
-
-		std::cout << "Copied vertex staging buffer to vertex buffer" << std::endl;
 	}
 
 	void Mesh::createIndexBuffers(FveDevice& device, const std::vector<uint32_t>& indices) {
