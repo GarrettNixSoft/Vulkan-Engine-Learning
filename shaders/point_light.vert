@@ -10,10 +10,12 @@ const vec2 OFFSETS[6] = vec2[](
 );
 
 layout(location = 0) out vec2 fragOffset;
+layout(location = 3) out float visibility;
 
 struct Fog {
 	vec4 color;
 	vec4 dist;
+	vec4 densityGradient;
 };
 
 struct Sun {
@@ -53,5 +55,10 @@ void main() {
 	vec4 positionInCameraSpace = lightInCameraSpace + push.radius * vec4(fragOffset, 0.0, 0.0);
 
 	gl_Position = ubo.projection * positionInCameraSpace;
+
+	float dist = length(positionInCameraSpace.xyz);
+	visibility = exp(-pow((dist * ubo.fog.densityGradient.x), ubo.fog.densityGradient.y));
+	//visibility = mix(dist, ubo.fog.dist.x, ubo.fog.dist.y);
+	visibility = clamp(visibility, 0, 1);
 
 }

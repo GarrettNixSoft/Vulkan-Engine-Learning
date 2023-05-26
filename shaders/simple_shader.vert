@@ -8,10 +8,12 @@ layout(location = 3) in vec2 uv;
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragPosWorld;
 layout(location = 2) out vec3 fragNormalWorld;
+layout(location = 3) out float visibility;
 
 struct Fog {
 	vec4 color;
 	vec4 dist;
+	vec4 densityGradient;
 };
 
 struct Sun {
@@ -40,16 +42,22 @@ layout(push_constant) uniform Push {
 	mat4 normalMatrix;
 } push;
 
-const float AMBIENT = 0.002;
-
 void main() {
 
 	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
+	vec4 positionRelativeToCamera = ubo.view * positionWorld;
 
-	gl_Position = ubo.projection * (ubo.view * positionWorld);
+	gl_Position = ubo.projection * (positionRelativeToCamera);
 
 	fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
 	fragPosWorld = positionWorld.xyz;
 	fragColor = color;
+
+	float dist = length(positionRelativeToCamera.xyz);
+	visibility = exp(-pow((dist * ubo.fog.densityGradient.x), ubo.fog.densityGradient.y));
+	//visibility = mix(dist, ubo.fog.dist.x, ubo.fog.dist.y);
+	visibility = clamp(visibility, 0, 1);
+
+	//visibility = dist;
 
 }

@@ -4,12 +4,14 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPosWorld;
 layout(location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 texCoord;
+layout(location = 4) in float visibility;
 
 layout(location = 0) out vec4 outColor;
 
 struct Fog {
 	vec4 color;
 	vec4 dist;
+	vec4 densityGradient;
 };
 
 struct Sun {
@@ -89,6 +91,10 @@ void main() {
 	}
 
 	// Add light to object color
-	outColor = vec4(objColor, 1.0) + vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
+	outColor = vec4(diffuseLight, 1.0f) * vec4(objColor, 1.0) + vec4(specularLight, 1.0);
+
+	outColor = mix(ubo.fog.color, outColor, visibility);
+
+	//outColor = vec4(visibility);
 
 }

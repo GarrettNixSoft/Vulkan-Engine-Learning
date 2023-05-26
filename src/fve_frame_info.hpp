@@ -11,7 +11,8 @@ namespace fve {
 
 	struct Fog {
 		glm::vec4 color{ 0.63f, 0.4f, 0.0f, 1.0f };
-		glm::vec4 distances{ 50.0f, 70.0f, 0.0f, 0.0f };
+		glm::vec4 distances{ 5.0f, 10.0f, 0.0f, 0.0f };
+		glm::vec4 densityGradient{0.035f, 5.0f, 0.0f, 0.0f};
 	};
 
 	struct Sun {
